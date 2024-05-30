@@ -57,7 +57,7 @@ It is worth mentioning that the scripts expect that the data are described in a 
     c. subset: name of the subset wheret the image files are stored. Should be placed inside `--data_path`
     d. img_name: file name of the input image source. Should be stored in `{data_path}/{subset}/img/{img_name}`
     e. label_name: file name of the refering mask image. Should be stored in `{data_path}/{subset}/label/{label_name}`
-    ```
+
 
 By the end of this process, it is expected that the metadata are created in the format:
 ```
@@ -93,6 +93,8 @@ and that the data follow the structure:
         ...
 - ...
 ```
+
+Some samples of datasets may be found at `data/`.
 
 ## Citation
 Whenever using the here available data, remember to cite the original chapter:
