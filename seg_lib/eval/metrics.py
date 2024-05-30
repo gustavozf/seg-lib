@@ -118,55 +118,7 @@ class Metrics:
             'e-measure': np.array(self.emes).mean()
         }
 
-class LocusteDatasetMetrics(Metrics):
-    def step(self, pred, gt):
-        self.ious.append(self.get_iou(pred, gt))
-        self.maes.append(self.get_mae(pred, gt))
-        
-        bool_gt = gt.astype(bool)
-        bool_pred = pred.astype(bool)
-        self.dices.append(self.get_dice(bool_pred, bool_gt))
-        self.wfms.append(self.get_f_beta_measure(bool_pred, bool_gt))
-        self.emes.append(self.get_e_measure(bool_pred, bool_gt))
-        del bool_gt, bool_pred
-    
-    def get_dice(self, pred, gt):
-        tp, fp, _, fn = self.cal_confusion(pred, gt)
-        return (2.0 * tp) / (2.0 * tp + fp + fn + 1e-7)
-    
-    def get_iou(self, pred, target):
-        return jaccard_score(
-            target.reshape(-1).astype(bool),
-            pred.reshape(-1).astype(bool)
-        )
-
-class SkinDatasetMetrics(Metrics):
-    def step(self, pred, gt):
-        y_pred_bool = pred.astype(bool)
-        y_true_bool = gt.astype(bool)
-        self.tps += np.logical_and(y_true_bool, y_pred_bool).sum()
-        self.tns += np.logical_and(~y_true_bool, ~y_pred_bool).sum()
-        self.fps += np.logical_and(~y_true_bool, y_pred_bool).sum()
-        self.fns += np.logical_and(y_true_bool, ~y_pred_bool).sum()
-
-    def get_results(self):
-        # for skin dataset, we didn't need the other metrics. TODO: implement
-        return {
-            'iou': self.tps / (self.tps + self.fns + self.fps),
-            'dice': (
-                (2.0 * self.tps) 
-                    / (2.0 * self.tps + self.fps + self.fns + 1e-7)
-            ),
-            'mae': None,
-            'f-measure': None,
-            'e-measure': None,
-        }
-
-METRICS_PER_DATASET = {
-    'common': Metrics,
-    'locuste': LocusteDatasetMetrics,
-    'skin': SkinDatasetMetrics
-}
+METRICS_PER_DATASET = {'common': Metrics}
 
 def select_metric_from_dataset(dataset_name: str):
     if dataset_name in {'locuste', 'skin'}:
