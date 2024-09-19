@@ -1,0 +1,7 @@
+,split,class_id,subset,img_name,label_name
+0,train,1,ribs_set_sep_sample,VinDr_RibCXR_train_000.png,VinDr_RibCXR_train_000_1.png
+1,train,1,ribs_set_sep_sample,VinDr_RibCXR_train_000.png,VinDr_RibCXR_train_000_2.png
+2,train,1,ribs_set_sep_sample,VinDr_RibCXR_train_002.png,VinDr_RibCXR_train_002_1.png
+3,train,1,ribs_set_sep_sample,VinDr_RibCXR_train_002.png,VinDr_RibCXR_train_002_2.png
+376,val,1,ribs_set_sep_sample,VinDr_RibCXR_train_001.png,VinDr_RibCXR_train_001_1.png
+377,val,1,ribs_set_sep_sample,VinDr_RibCXR_train_001.png,VinDr_RibCXR_train_001_2.png

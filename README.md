@@ -1,48 +1,47 @@
-# samus-train-n-fusion
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+# SegLib
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
 
-Repository containing the source code used for training segmentation models (SAMUS, PVT-Seg and CAFE-NET) and applying late fusion on segmentation ensembles on the chapter: Sample Size for Training and Testing: Segment Anything models and supervised approaches.
+SegLib: a small library for the training and inference of segmentation models.
 
 ## Project Structure
 This project is structured as follows:
-- `docker`: files related to the environment used for training and testing the model. Includes the main Dockerfile and the pip requirments file;
+- `docker`: files related to the environment used for training and testing the model. Includes files to build a Docker image or a Singularity image;
 - `notebooks`: contains the Jupyter notebooks used during experimentation;
 - `scripts`: contains the executable files for the repository, such as the ones used for: training the models, inference, evaluation, etc.;
 - `seg_lib`: library containing all of the shared source code that is used by the scripts (built using Poetry, more information on the `pyproject.toml` file).
 
 ## Installation
-To run the source code, please follow the steps as described:
-
-1. Create a conda environment and activate it
+In order to use the training and fusion scripts, please have Python 3.10 installed on your machine. We strongly recommend that the user creates a [conda](https://docs.anaconda.com/miniconda/miniconda-install/) environment for such purpose:
 ```bash
+# create the environment
 conda create -n seg_lib_env python==3.10
+# activate the environment
 conda activate seg_lib_env
 ```
 
-2. Install poetry for dependency management and library building
+Later on, our library needs to be installed. Such action may be perform by using `pip` or by building it from scratch. Both processes are described in the following subsections.
+
+### Using Pip
+The library can be installed by executing the following [pip](https://pypi.org/project/seg-lib/) command:
 ```bash
-pip install poetry
+# install the latest version
+pip install seg-lib
 ```
 
-3. Generate the library and install it
+### Using the Local Build
+To build the library locally, please follow the steps as described:
+
 ```bash
+# install poetry for dependency management and library building
+pip install poetry
+# build the library using poetry
 poetry build
-pip install dist/seg_lib-1.0.0-py3-none-any.whl
+# install the built wheel file
+pip install dist/seg_lib-1.0.3-py3-none-any.whl
 ```
 
 If all of the steps were followed correctly, everything should be set up.
-
-## Running the Scripts
-All of the scripts (or jobs) may be found in the `scripts` folder. It includes scripts for testing, training, fusion methods, etc. To run any of them, simply activate the conda environment that was previously set up and run the command as:
-
-```bash
-python scripts/submodule/script.py [ARGS]
-```
-
-A brief description of each one of the scripts may be found in READMEs contained inside each submodule. Currently, three submodules are available:
-- `samus`: scripts developed for training/evaluating SAMUS and its variations;
-- `seg`: scripts developed for the general training/evaluation of segmentation models;
-- `seg_n_sam`: scripts developed for the segmentation + SAM fusion pipeline.
+The pre-built `wheel` file may be also found in the `dist/` folder, contained in this repository. 
 
 ## Data Input Format
 To run the training/evaluation scripts for SAMUS and Segmentation models, first refer to the arguments listed in `scripts/samus/train.py`. Each argument has a brief description and most of their default values are already set. After running the experiments, all of the outputs (including the best model's weights, logs, etc.) may be found in the path described in `--output_path`.
@@ -96,28 +95,7 @@ and that the data follow the structure:
 
 Some samples of datasets may be found at `data/`.
 
-## Citation
-Whenever using the here available data, remember to cite the original chapter:
-```
-@inbook{ReferenceID,
-  author  = {
-    Daniela Cuza
-        and Carlo Fantozzi
-        and Loris Nanni
-        and Daniel Fusaro
-        and Gustavo Zanoni Felipe
-        and Sheryl Brahnam},
-  title   = {Sample Size for Training and Testing: Segment Anything models and supervised approaches.},
-  chapter = {Chapter Number},
-  pages   = {40},
-  year    = {2024},
-  publisher = {Publisher Name},
-  address   = {Publication Location}
-}
-```
-
 ## License
 This repository is licensed under Apache 2.0.
 
-It is advised to also check [SAM's](https://github.com/facebookresearch/segment-anything/blob/main/LICENSE) and [SAMUS'](https://github.com/xianlin7/SAMUS/blob/main/LICENSE) licenses on their original repositories.
-
+It is advised to also check [SAM](https://github.com/facebookresearch/segment-anything/blob/main/LICENSE), [SAMUS](https://github.com/xianlin7/SAMUS/blob/main/LICENSE) and [VinDr-RibCXR](https://github.com/vinbigdata-medical/MIDL2021-VinDr-RibCXR) licenses on their original repositories.

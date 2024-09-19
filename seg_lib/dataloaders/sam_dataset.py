@@ -1,10 +1,6 @@
-import os
-
 import cv2
 import torch
 import numpy as np
-import pandas as pd
-from torch.utils.data import Dataset
 
 from seg_lib.dataloaders.data_aug import BaseAugmenter
 from seg_lib.prompt.train_sampler import TrainPromptSampler
@@ -70,7 +66,8 @@ class SamGeneralDataset(SegGeneralDataset):
     def __getitem__(self, i):
         row = dict(self.df.iloc[i])
         image, mask = self.read_img(
-            row['img_name'], row['label_name'], row['subset']))
+            row['img_name'], row['label_name'], row['subset']
+        )
         original_img_size = image.shape[:2]
 
         # resize the images
