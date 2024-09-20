@@ -14,6 +14,7 @@ from seg_lib.losses.combined_losses import MaskDiceAndBCELoss
 from seg_lib.models.samus.build_sam_us import samus_model_registry
 from seg_lib.prompt.train_sampler import TrainPromptSampler
 from seg_lib.trainers import SamusModelTrainer
+from seg_lib.models import SUPPORTED_SAM_MODELS
 
 CONFIG = None
 RANDOM_SEED = 1234
@@ -30,7 +31,7 @@ def get_args():
     parser.add_argument(
         '-t', '--model_type',
         required=False, type=str,
-        default='SAMUS', choices=set(),
+        default='SAMUS', choices=SUPPORTED_SAM_MODELS,
         help='Type of segmentation model architecture.')
     parser.add_argument(
         '-d', '--data_path',

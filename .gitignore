@@ -167,3 +167,4 @@ docker/submit_train.slurm
 docker/run.sh
 docker/build_singularity.sh
 outputs
+pretrained_models

@@ -4,8 +4,7 @@ EXP_TAG=samus_seg_fusion
 SEG_EXP_TAG=seg_model
 SAM_EXP_TAG=samus_model
 
-# BASE_PATH=/path/to/input/files
-BASE_PATH="/media/zanoni/TOSHIBA EXT/UNIPD/SAM/samus-train-n-fusion"
+BASE_PATH=/path/to/input/files
 SAM_MODEL_PATH=outputs/$SAM_EXP_TAG/best_SAMUS.pth
 DATASET_DESCRIPTOR=ribs_da1.csv
 
@@ -23,4 +22,9 @@ python inference.py \
     --sampling_step 50 \
     --sampling_mode grid
 
-#python eval.py
+python eval.py \
+    --output_path "$BASE_PATH/outputs/$EXP_TAG" \
+    --seg_output_path "$BASE_PATH/outputs/$SEG_EXP_TAG" \
+    --data_path "$BASE_PATH/data" \
+    --data_desc_path "$BASE_PATH/data/metadata/$DATASET_DESCRIPTOR" \
+    --split_name val

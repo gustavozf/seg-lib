@@ -155,12 +155,10 @@ def save_logits(
     os.makedirs(save_out_path, exist_ok=True)
     for i in tqdm(range(len(file_names))):
         img_name = file_names[i][:file_names[i].rindex('.')]
-        cv2.imwrite(
-            os.path.join(save_out_path, f'{img_name}.jpg'), bin_masks[i] * 255
-        )
-        np.save(
-            os.path.join(save_out_path, f'{img_name}.npy'), pred_logits[i]
-        )
+        bin_mask_path = os.path.join(save_out_path, f'{img_name}.bmp')
+        logits_path = os.path.join(save_out_path, f'{img_name}.npy')
+        cv2.imwrite(bin_mask_path, bin_masks[i] * 255)
+        np.save(logits_path, pred_logits[i])
 
 def main():
     eval_config = get_args()
