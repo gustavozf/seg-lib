@@ -1,0 +1,4 @@
+split,class_id,subset,img_name,label_name
+train,1,ribs_da1,1.png,1.bmp
+train,1,ribs_da1,10.png,10.bmp
+val,1,ribs_da1,85.png,85.bmp

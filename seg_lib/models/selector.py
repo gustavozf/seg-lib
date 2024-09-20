@@ -26,7 +26,7 @@ SAM_PREDICTORS = {
 }
 SUPPORTED_SAM_MODELS = set(SAM_PREDICTORS.keys())
 SUPPORTED_MODEL_TYPES = {'default', 'vit_h' 'vit_l', 'vit_b'}
-SUPPORTED_SAMv2_TYPES = variant_to_config_mapping
+SUPPORTED_SAMv2_TYPES = set(variant_to_config_mapping.keys())
 
 def seg_selector(
         checkpoint_path: str,

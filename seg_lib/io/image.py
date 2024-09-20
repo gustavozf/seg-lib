@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 def read_img(path:str) -> np.ndarray:
-    return cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+    return cv2.cvtColor(cv2.imread(path, 1), cv2.COLOR_BGR2RGB)
 
 def read_bmask(path:str) -> np.ndarray:
     return cv2.imread(path, cv2.IMREAD_GRAYSCALE) / 255.0

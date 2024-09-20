@@ -3,7 +3,7 @@
 EXP_TAG=seg_model
 BASE_PATH=/path/to/input/files
 BACKBONE_FILE=pvt_v2_b2.pth
-DATASET_DESCRIPTOR=dataset_set_sep_sample.csv
+DATASET_DESCRIPTOR=ribs_da1.csv
 
 python train.py \
     --model_type CAFE \

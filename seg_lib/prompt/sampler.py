@@ -6,10 +6,17 @@ import numpy as np
 from scipy import ndimage
 
 class Sampler:
+    SAMPLING_MODES = {
+        'common', 'A',
+        'center_of_mass', 'B',
+        'random', 'C',
+        'grid', 'D'
+    }
+
     def __init__(
             self,
             sampling_step: int = 50, min_blob_count: int = 10,
-            mode: str = 'grid', erode_grid: str = 'on'):
+            mode: str = 'grid', erode_grid: bool = False):
         self.sampling_step  = sampling_step
         self.min_blob_count = min_blob_count
         self.mode = mode
@@ -204,12 +211,12 @@ class Sampler:
     def sample(self, mask_of_blobs: np.ndarray, mask: np.ndarray):
         if self.mode in ('common', 'A'):
             return self.sample_pixels(mask_of_blobs, mask)
-        elif self.mode in ('center_of_mass', 'B'):
+        if self.mode in ('center_of_mass', 'B'):
             return self.sample_pixels_center_of_mass(mask_of_blobs, mask)
-        elif self.mode in ('random', 'C'):
+        if self.mode in ('random', 'C'):
             return self.sample_pixels_random(mask_of_blobs, mask)
-        elif self.mode in ('grid', 'D'):
-            if self.erode_grid=="on":
+        if self.mode in ('grid', 'D'):
+            if self.erode_grid:
                 return self.sample_pixels_eroded_grid(mask_of_blobs, mask)
-            else:
-                return self.sample_pixels_grid(mask_of_blobs, mask)
+        # grid + not erod_grid
+        return self.sample_pixels_grid(mask_of_blobs, mask)

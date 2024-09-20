@@ -4,11 +4,12 @@ import os
 import cv2
 import pandas as pd
 import torch
-import numpy as np
 from tqdm import tqdm
 
-from seg_lib.io.files import read_json
+from seg_lib.dataloaders.image_ops import to_grayscale
 from seg_lib.eval.metrics import Metrics
+from seg_lib.io.image import read_img
+from seg_lib.io.files import read_json
 from seg_lib.models.samus import samus_model_registry, SamusPredictor
 from seg_lib.prompt import TrainPromptSampler, MaskInferenceAfterSample
 
@@ -70,7 +71,7 @@ def get_predictor(
     return SamusPredictor(model)
 
 def get_data(df_path: str, split: str = 'test'):
-    df = pd.read_csv(df_path, index_col=0)
+    df = pd.read_csv(df_path)
     df = df[df['split'] == split]
     
     return df
@@ -112,13 +113,8 @@ def main():
             label_path = os.path.join(base_path, 'label', row['label_name'])
 
             # read image and convert it to a 3-channel grayscale image
-            img = cv2.imread(img_path, 1)[:, :, ::-1]
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-            image = np.zeros((*img.shape, 3), dtype=np.uint8)
-            image[:, :, 0] = img
-            image[:, :, 1] = img
-            image[:, :, 2] = img
-            del img
+            image = read_img(img_path)
+            image = to_grayscale(image)
 
             label = cv2.imread(label_path, 0)
             label[label > 1] = 1

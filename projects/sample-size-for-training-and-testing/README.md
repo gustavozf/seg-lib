@@ -1,73 +1,27 @@
 # Sample Size for Training and Testing: Segment Anything models and supervised approaches
 
 Repository containing the source code used for training segmentation models (SAMUS, PVT-Seg and CAFE-NET) and applying late fusion on segmentation ensembles on the work: 
-- `Sample Size for sTraining and Testing: Segment Anything models and supervised approaches` (lib version: [v1.0.3]()).
+- `Sample Size for sTraining and Testing: Segment Anything models and supervised approaches` (lib version: [v1.0.4]()).
 
 ## Project Structure
 This project is structured as follows:
 - `notebooks`: contains the Jupyter notebooks used during experimentation;
-- `samus`:
+- `samus`: sources 
 - `seg`: 
 - `seg_n_sam`: 
 
 ## Dependency installation
-In order to run the here presented source codes, it is required that the user has the `seg_lib` library installed on version `1.0.3`:
+In order to run the here presented source codes, it is required that the user has the `seg_lib` library installed on version `1.0.4`:
 
 ```bash
-pip install seg_lib==1.0.3
+pip install seg_lib==1.0.4
 ```
 
 More details on the installation process may be found on the README.md file contained to the root of this repository
 
 ## Data Input Format
-The scripts expect that the data are described in a CSV file, contained in a `metadata` folder existing in `--data_path`. In order to set the data in the desired format, please follow the steps described as follows:
-
-1. create a folder called `metadata`, such as: `/path/to/your/data/metadata`
-2. place a CSV file `{DATASET_SNAME}.csv` inside the matadata path
-3. create the headers to the file and fill it with the information about each pair of image sample and label mask, as:
-    a. split: dataset split, used to filter the data during training and testing. Should be: `train`, `val` or `test`
-    b. class_id: integer describing the mask class identifier. If the problem deals with binary masking, it is assumed that this value is 1
-    c. subset: name of the subset wheret the image files are stored. Should be placed inside `--data_path`
-    d. img_name: file name of the input image source. Should be stored in `{data_path}/{subset}/img/{img_name}`
-    e. label_name: file name of the refering mask image. Should be stored in `{data_path}/{subset}/label/{label_name}`
-
-
-By the end of this process, it is expected that the metadata are created in the format:
-```
-   split  class_id         subset                    img_name                     label_name
-0  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R1.bmp
-1  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R2.bmp
-2  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R3.bmp
-3  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R4.bmp
-4  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R5.bmp
-```
-
-and that the data follow the structure:
-```
-- metadata
-    |_ dataset_descriptor.csv
-- subset_1
-    |- img
-        |- img_name_1.png
-        |- img_name_2.png
-        |- ...
-        |_ img_name_n.png
-    |- label
-        |- img_name_1.bmp
-        |- img_name_2.bmp
-        |- ...
-        |_ img_name_n.bmp
-- subset_n
-    |- img
-        |- img_name_1.png
-        ...
-    |- label
-        |- img_name_1.bmp
-        ...
-- ...
-```
-
-Some samples of datasets may be found at `data/`.
+SAM -> one label per object
+Segmenter and fusion -> one label per image
 
 ## Data Download
 This work used the [VinDr-RibCXR](https://github.com/vinbigdata-medical/MIDL2021-VinDr-RibCXR) dataset. The version of the used images and masks may be found at [Google Drive](https://www.google.com/drive/). Different from the original version, the used dataset was used for semantic segmentation and therefore are presented as pairs of input and mask image files. In order to get the dataset as in the original input format, please recall to the original authors and create a request to them. 

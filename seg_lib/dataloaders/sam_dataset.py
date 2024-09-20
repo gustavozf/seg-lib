@@ -5,9 +5,8 @@ import numpy as np
 from seg_lib.dataloaders.data_aug import BaseAugmenter
 from seg_lib.prompt.train_sampler import TrainPromptSampler
 from seg_lib.prompt.samus_sampler import random_bbox, fixed_bbox
-from seg_lib.dataloaders.seg_dataset import (
-    SegGeneralDataset, resize_w_pad
-)
+from seg_lib.dataloaders.image_ops import resize_w_pad
+from seg_lib.dataloaders.seg_dataset import SegGeneralDataset
 
 DEFAULT_SAMPLER = TrainPromptSampler(min_blob_count=10, max_num_prompts=1)
 
