@@ -81,7 +81,7 @@ def get_args():
         '--sam_model_topology',
         required=False, type=str,
         default='SAMUS',
-        choices=(SUPPORTED_SAM_MODELS | SUPPORTED_SAMv2_TYPES),
+        choices=SUPPORTED_SAM_MODELS,
         help='Topology name of the SAM model to be loaded.')
     parser.add_argument(
         '--sam_model_type',

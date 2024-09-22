@@ -16,10 +16,21 @@ This project is structured as follows:
 ## Projects
 Under the `projects/` path, you can find the source code used in our developed articles. Please refer to the `README.md` file in each individual project for more details on how to execute them. A brief description of each project is provided below.
 
+### improving-existing-segmentators-performance
+Cloned repository of the article (with an additional notebook used for experimentation):
+- **Title**: [Improving Existing Segmentators Performance with Zero-Shot Segmentators](https://www.mdpi.com/1099-4300/25/11/1502)
+- **Authors**:  Loris Nanni, Daniel Fusaro, Carlo Fantozzi and Alberto Pretto
+- **Journal**: Entropy
+- **Publisher**: MDPI
+- **Year**: 2023
+- **DOI**: https://doi.org/10.3390/e25111502
+
+Please refer to the [original repository](https://github.com/LorisNanni/Improving-existing-segmentators-performance-with-zero-shot-segmentators) for more details. The full citation may be found at `projects/improving-existing-segmentators-performance/CITATION.bib`.
+
 ### sample-size-for-training-and-testing
 Scripts developed for the book chapter:
 - **Title**: [Sample Size for Training and Testing: Segment  Anything models and supervised approaches](https://link.springer.com/chapter/10.1007/978-3-031-65430-5_6)
-- **Authors**: Daniela Cuza, Carlo Fantozzi, Loris Nanni, Daniel Fusaro, Gustavo Zanoni Felipe & Sheryl Brahnam
+- **Authors**: Daniela Cuza, Carlo Fantozzi, Loris Nanni, Daniel Fusaro, Gustavo Zanoni Felipe and Sheryl Brahnam
 - **Book Title**: Advances in Intelligent Healthcare Delivery and Management
 - **Publisher**: Springer
 - **Year**: 2024
@@ -41,10 +52,10 @@ After setting up the correct Python version, the library may be installed by usi
 
 ### Using Pip
 The library can be installed by executing the following [pip](https://pypi.org/project/seg-lib/) command:
+
 ```bash
 # install the latest version
 pip install seg-lib
-
 # or install a target version
 pip install seg-lib==1.0.4
 ```
@@ -115,7 +126,7 @@ One should notice that, for training SAM-like architectures (e.g., SAMUS), it is
 
 Some samples of datasets may be found at `data/`. In this ones, `ribs_da1` shows how the data is organized for training/evaluating semantic segmentation models, as `ribs_set_sep_sample` shows how it should be organized for the traning/evaluation of SAM-like architectures.
 
-## Docker Build
+## [OPTIONAL] Docker Build
 If it is of your interest to have the environement set up in a [Docker](https://www.docker.com/) environment, a base `Dockerfile` may be seen at `docker/Dockerfile`. In order to build it, please follow the steps:
 
 ```bash

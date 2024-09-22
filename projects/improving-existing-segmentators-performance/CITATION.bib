@@ -1,0 +1,15 @@
+
+@Article{nanni23,
+    AUTHOR = {Nanni, Loris and Fusaro, Daniel and Fantozzi, Carlo and Pretto, Alberto},
+    TITLE = {Improving Existing Segmentators Performance with Zero-Shot Segmentators},
+    JOURNAL = {Entropy},
+    VOLUME = {25},
+    YEAR = {2023},
+    NUMBER = {11},
+    ARTICLE-NUMBER = {1502},
+    URL = {https://www.mdpi.com/1099-4300/25/11/1502},
+    PubMedID = {37998194},
+    ISSN = {1099-4300},
+    ABSTRACT = {This paper explores the potential of using the SAM (Segment-Anything Model) segmentator to enhance the segmentation capability of known methods. SAM is a promptable segmentation system that offers zero-shot generalization to unfamiliar objects and images, eliminating the need for additional training. The open-source nature of SAM allows for easy access and implementation. In our experiments, we aim to improve the segmentation performance by providing SAM with checkpoints extracted from the masks produced by mainstream segmentators, and then merging the segmentation masks provided by these two networks. We examine the “oracle” method (as upper bound baseline performance), where segmentation masks are inferred only by SAM with checkpoints extracted from the ground truth. One of the main contributions of this work is the combination (fusion) of the logit segmentation masks produced by the SAM model with the ones provided by specialized segmentation models such as DeepLabv3+ and PVTv2. This combination allows for a consistent improvement in segmentation performance in most of the tested datasets. We exhaustively tested our approach on seven heterogeneous public datasets, obtaining state-of-the-art results in two of them (CAMO and Butterfly) with respect to the current best-performing method with a combination of an ensemble of mainstream segmentator transformers and the SAM segmentator. The results of our study provide valuable insights into the potential of incorporating the SAM segmentator into existing segmentation techniques. We release with this paper the open-source implementation of our method.},
+    DOI = {10.3390/e25111502}
+}
