@@ -51,8 +51,9 @@ def get_args():
         required=False, type=int, default=8,
         help='Batch size used for training and validation.')
     parser.add_argument(
-        '-s', '--split_name',
-        required=False, type=str, default='val',
+        '-s', '--test_split_name',
+        required=False, type=str,
+        default='val', choices={'val', 'test'},
         help=(
             'Data split name, used to filter the data samples on the '
             'metadata file.'
@@ -188,7 +189,7 @@ def main():
         eval_config.data_desc_path,
         batch_size=eval_config.batch_size,
         input_size=train_config['input_size'],
-        test_split=eval_config.split_name)
+        test_split=eval_config.test_split_name)
     print('Running evaluation...')
     metrics, bin_masks, pred_logits, file_names = eval(test_dataset, model)
     print(metrics)

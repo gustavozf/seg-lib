@@ -106,8 +106,9 @@ def get_args():
         help=('Path to the data description file (CSV format). '
               'Read from `data_path`.'))
     parser.add_argument(
-        '-s', '--split_name',
-        required=False, type=str, default='val',
+        '-s', '--test_split_name',
+        required=False, type=str,
+        default='val', choices={'val', 'test'},
         help=(
             'Data split name, used to filter the data samples on the '
             'metadata file.'
@@ -153,7 +154,7 @@ def main():
     print('Loading data...')
     test_df = get_data(
         inference_config.data_desc_path,
-        split=inference_config.split_name)
+        split=inference_config.test_split_name)
     print('Loading sampler...')
     sampler = Sampler(
         sampling_step=inference_config.sampling_step,

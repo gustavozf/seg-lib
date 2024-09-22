@@ -13,8 +13,8 @@ python train.py \
     --input_size 352 \
     --learning_rate 0.0001 \
     --lr_warmup_period 0 \
-    --batch_size 2 \
-    --epochs 4 \
+    --batch_size 32 \
+    --epochs 100 \
     --eval_freq 1 \
     --save_freq 1
 
@@ -23,5 +23,5 @@ python eval.py \
     --backbone_weights_path "$BASE_PATH/pretrained_models/pvt_v2_b2.pth" \
     --data_path "$BASE_PATH/data" \
     --data_desc_path "metadata/$DATASET_DESCRIPTOR" \
-    --batch_size 8 \
-    --split_name 'val'
+    --batch_size 32 \
+    --test_split_name val

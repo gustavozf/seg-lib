@@ -12,8 +12,6 @@ from seg_lib.eval.fusion import LogitsFusion
 from seg_lib.io.image import read_bmask
 from seg_lib.models.normalizer import Normalizer
 
-from config import InferenceConfig as CONFIG
-
 BIN_TH = 0.5
 
 logging.getLogger().setLevel(logging.INFO)
@@ -85,8 +83,9 @@ def get_args():
         help=('Path to the data description file (CSV format). '
               'Read from `data_path`.'))
     parser.add_argument(
-        '-s', '--split_name',
-        required=False, type=str, default='val',
+        '-s', '--test_split_name',
+        required=False, type=str,
+        default='val', choices={'val', 'test'},
         help=(
             'Data split name, used to filter the data samples on the '
             'metadata file.'
@@ -104,7 +103,9 @@ def main():
     }
 
     logging.info('Loading data...')
-    test_df = get_data(eval_config.data_desc_path, split=eval_config.split_name)
+    test_df = get_data(
+        eval_config.data_desc_path,
+        split=eval_config.test_split_name)
 
     logging.info('Processing image inputs...')
     filenames = []

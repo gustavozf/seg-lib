@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from seg_lib.dataloaders.sam_dataset import SamGeneralDataset
 from seg_lib.io.files import read_json
 from seg_lib.losses.combined_losses import MaskDiceAndBCELoss
-from seg_lib.models.samus.build_sam_us import samus_model_registry
+from seg_lib.models.selector import build_samus_model
 from seg_lib.prompt.train_sampler import TrainPromptSampler
 from seg_lib.trainers import SamusModelTrainer
 
@@ -27,10 +27,6 @@ def get_args():
         required=True, type=str,
         help='Path to the training output path.')
     parser.add_argument(
-        '-w', '--backbone_weights_path',
-        required=False, type=str,
-        help='Path to the backbone weights.')
-    parser.add_argument(
         '-d', '--data_path',
         required=True, type=str,
         help='Path to the test data.')
@@ -44,8 +40,9 @@ def get_args():
         required=False, type=int, default=8,
         help='Batch size used for training and validation.')
     parser.add_argument(
-        '-s', '--split_name',
-        required=False, type=str, default='val',
+        '-s', '--test_split_name',
+        required=False, type=str,
+        default='val', choices={'val', 'test'},
         help=(
             'Data split name, used to filter the data samples on the '
             'metadata file.'
@@ -53,21 +50,6 @@ def get_args():
     )
     
     return parser.parse_args()
-
-def get_model(
-        checkpoint_path: str,
-        backbone_path: str,
-        input_size: int = 256):
-    model = samus_model_registry['vit_b'](
-        encoder_input_size=input_size, checkpoint=backbone_path
-    )
-    model.to(torch.device(DEVICE))
-    checkpoint = torch.load(
-        checkpoint_path, map_location=torch.device(DEVICE)
-    )
-    model.load_state_dict(checkpoint)
-
-    return model
 
 def get_data(
         data_path: str, df_file_path: str,
@@ -112,10 +94,7 @@ def main():
         train_config['output_path'], f"best_{train_config['model_type']}.pth"
     )
 
-    model = get_model(
-        checkpoint_path,
-        eval_config.backbone_weights_path,
-        input_size=train_config['input_size'])
+    model = build_samus_model(checkpoint_path, device=DEVICE)
     val_ds = get_data(
         eval_config.data_path, eval_config.data_desc_path,
         input_size=train_config['input_size'],
@@ -123,7 +102,7 @@ def main():
         prompt_type=train_config['prompt_type'],
         max_num_prompts=train_config['n_clicks'],
         batch_size=eval_config.batch_size,
-        split_name=eval_config.split_name)
+        split_name=eval_config.test_split_name)
     loss_f = get_loss()
 
     trainer = SamusModelTrainer(model, None, loss_f, device=DEVICE)

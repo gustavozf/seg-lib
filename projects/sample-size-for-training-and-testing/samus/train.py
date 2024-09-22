@@ -11,16 +11,19 @@ from seg_lib.dataloaders.data_aug import WeakImgSegAugmenter
 from seg_lib.dataloaders.sam_dataset import SamGeneralDataset
 from seg_lib.io.files import dump_json
 from seg_lib.losses.combined_losses import MaskDiceAndBCELoss
-from seg_lib.models.samus.build_sam_us import samus_model_registry
+from seg_lib.models import SAM_INPUT_SIZES
+from seg_lib.models.selector import build_samus_model
 from seg_lib.prompt.train_sampler import TrainPromptSampler
 from seg_lib.trainers import SamusModelTrainer
-from seg_lib.models import SUPPORTED_SAM_MODELS
 
 CONFIG = None
 RANDOM_SEED = 1234
 # total number of parallel workers used in the dataloader
 N_GPUS = torch.cuda.device_count()
 DEVICE = 'cuda' if N_GPUS > 0 else 'cpu'
+MODEL_TYPE = 'SAMUS'
+INPUT_SIZE = SAM_INPUT_SIZES[MODEL_TYPE]['input_size']
+EMBEDDING_SIZE = SAM_INPUT_SIZES[MODEL_TYPE]['embedding_size']
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -28,11 +31,6 @@ def get_args():
         description='Train a segmentation model.'
     )
 
-    parser.add_argument(
-        '-t', '--model_type',
-        required=False, type=str,
-        default='SAMUS', choices=SUPPORTED_SAM_MODELS,
-        help='Type of segmentation model architecture.')
     parser.add_argument(
         '-d', '--data_path',
         required=True, type=str,
@@ -50,14 +48,6 @@ def get_args():
         '-c', '--checkpoint',
         required=False, type=str,
         help='Path to the pretrained base model checkpoint.')
-    parser.add_argument(
-        '-i', '--input_size',
-        required=False, type=int, default=256,
-        help='Image input size.')
-    parser.add_argument(
-        '-es', '--embedding_size',
-        required=False, type=int, default=128,
-        help='Embedding size. Used for SAM-like training procedure.')
     parser.add_argument(
         '-lr', '--learning_rate',
         required=False, type=float, default=0.0001,
@@ -109,11 +99,8 @@ def set_seed():
 
 def get_model():
     # load the base model using SAM checkpoint
-    model = samus_model_registry['vit_b'](
-        encoder_input_size=CONFIG.input_size,
-        checkpoint=CONFIG.checkpoint)
-    model.to(torch.device(DEVICE))
-    
+    model = build_samus_model(CONFIG.checkpoint, device=DEVICE)
+        
     # print the total number of parameters
     pytorch_total_params = sum(
         p.numel() for p in model.parameters() if p.requires_grad
@@ -136,12 +123,12 @@ def get_data():
     # return image, mask, and filename
     loader_params = {
         'df_file_path': CONFIG.data_desc_path,
-        'img_size': CONFIG.input_size,
-        'embedding_size': CONFIG.embedding_size,
+        'img_size': INPUT_SIZE,
+        'embedding_size': EMBEDDING_SIZE,
         'prompt': CONFIG.prompt_type,
         'read_img_as_grayscale': True
     }
-    augmenter = WeakImgSegAugmenter(img_size=CONFIG.input_size)
+    augmenter = WeakImgSegAugmenter(img_size=INPUT_SIZE)
     train_dataset = SamGeneralDataset(
         CONFIG.data_path, split='train', point_sampler=sampler,
         augmenter=augmenter, **loader_params)
@@ -205,6 +192,9 @@ def main():
         os.path.join(CONFIG.output_path, 'config.json'),
         {
             **vars(CONFIG),
+            'model_type': MODEL_TYPE,
+            'input_size': INPUT_SIZE,
+            'embedding_size': EMBEDDING_SIZE,
             'lib_version': version('seg_lib'),
             'n_gpus': N_GPUS,
             'device': DEVICE,
@@ -219,7 +209,7 @@ def main():
         eval_freq=CONFIG.eval_freq,
         save_freq=CONFIG.save_freq,
         output_path=CONFIG.output_path,
-        model_name=CONFIG.model_type
+        model_name=MODEL_TYPE
     )
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ from seg_lib.dataloaders.image_ops import to_grayscale
 from seg_lib.eval.metrics import Metrics
 from seg_lib.io.image import read_img
 from seg_lib.io.files import read_json
-from seg_lib.models.samus import samus_model_registry, SamusPredictor
+from seg_lib.models.selector import build_samus_model, SamusPredictor
 from seg_lib.prompt import TrainPromptSampler, MaskInferenceAfterSample
 
 # total number of parallel workers used in the dataloader
@@ -46,8 +46,9 @@ def get_args():
         required=False, type=int, default=8,
         help='Batch size used for training and validation.')
     parser.add_argument(
-        '-s', '--split_name',
-        required=False, type=str, default='val',
+        '-s', '--test_split_name',
+        required=False, type=str,
+        default='val', choices={'val', 'test'},
         help=(
             'Data split name, used to filter the data samples on the '
             'metadata file.'
@@ -60,14 +61,7 @@ def get_predictor(
         checkpoint_path: str,
         backbone_path: str,
         input_size: int = 256):
-    model = samus_model_registry['vit_b'](
-        encoder_input_size=input_size, checkpoint=backbone_path
-    )
-    model.to(torch.device(DEVICE))
-    checkpoint = torch.load(
-        checkpoint_path, map_location=torch.device(DEVICE)
-    )
-    model.load_state_dict(checkpoint)
+    model = build_samus_model(checkpoint_path, device=DEVICE)
     return SamusPredictor(model)
 
 def get_data(df_path: str, split: str = 'test'):
@@ -97,7 +91,7 @@ def main():
     )
     test_df = get_data(
         eval_config.data_desc_path,
-        split=eval_config.split_name
+        split=eval_config.test_split_name
     )
 
     output_metrics = {}

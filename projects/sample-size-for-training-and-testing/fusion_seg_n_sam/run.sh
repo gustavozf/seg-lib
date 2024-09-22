@@ -18,7 +18,7 @@ python inference.py \
     --seg_output_path "$BASE_PATH/outputs/$SEG_EXP_TAG" \
     --data_path "$BASE_PATH/data" \
     --data_desc_path "$BASE_PATH/data/metadata/$DATASET_DESCRIPTOR" \
-    --split_name val \
+    --test_split_name val \
     --sampling_step 50 \
     --sampling_mode grid
 
@@ -27,4 +27,4 @@ python eval.py \
     --seg_output_path "$BASE_PATH/outputs/$SEG_EXP_TAG" \
     --data_path "$BASE_PATH/data" \
     --data_desc_path "$BASE_PATH/data/metadata/$DATASET_DESCRIPTOR" \
-    --split_name val
+    --test_split_name val

@@ -1,9 +1,6 @@
 BootStrap: docker
 From: pytorch/pytorch:2.1.2-cuda11.8-cudnn8-devel
 
-%files
-    seg_lib-1.0.0-py3-none-any.whl
-
 %post
     export DEBIAN_FRONTEND=noninteractive 
     apt update -y
@@ -11,7 +8,7 @@ From: pytorch/pytorch:2.1.2-cuda11.8-cudnn8-devel
         git \
         libgl1 \
         libglib2.0-0
-    pip install seg_lib-1.0.0-py3-none-any.whl
+    pip install seg-lib
 
 %environment
    export LC_ALL=C
