@@ -6,6 +6,8 @@ import cv2
 import torch
 import numpy as np
 
+from seg_lib.dataloaders.image_ops import to_grayscale
+from seg_lib.io.image import read_img
 from seg_lib.models.samus.modeling.samus import Samus
 from seg_lib.models.sam.transforms import ResizeLongestSide
 from seg_lib.models.sam import SamPredictor
@@ -22,24 +24,13 @@ class SamusPredictor(SamPredictor):
         self.transform = SamusResizeLongestSide(256)
         self.reset_image()
 
-    def to_grayscale(self, image: np.ndarray):
-        gs_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        
-        image = np.zeros((*gs_image.shape, 3), dtype=np.uint8)
-        image[:, :, 0] = gs_image
-        image[:, :, 1] = gs_image
-        image[:, :, 2] = gs_image
-        del gs_image
-
-        return image
-
     def set_image(
         self,
         image: np.ndarray | str,
         image_format: str = "RGB",
     ) -> None:
         if isinstance(image, str):
-            image = cv2.imread(image, 1)[:, :, ::-1](image)
+            image = read_img(image)
             image_format = 'RGB'
 
         assert image_format in [
@@ -50,7 +41,7 @@ class SamusPredictor(SamPredictor):
             image = image[..., ::-1]
 
         # SAMUS expects the inputs to be a 3-channel grayscale image
-        image = self.to_grayscale(image)
+        image = to_grayscale(image)
         # Transform the image to the form expected by the model
         input_image = self.transform.apply_image(image)
         input_image = torch.as_tensor(input_image, device=self.device)

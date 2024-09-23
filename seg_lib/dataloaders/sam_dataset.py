@@ -1,17 +1,12 @@
-import os
-
 import cv2
 import torch
 import numpy as np
-import pandas as pd
-from torch.utils.data import Dataset
 
 from seg_lib.dataloaders.data_aug import BaseAugmenter
 from seg_lib.prompt.train_sampler import TrainPromptSampler
 from seg_lib.prompt.samus_sampler import random_bbox, fixed_bbox
-from seg_lib.dataloaders.seg_dataset import (
-    SegGeneralDataset, resize_w_pad
-)
+from seg_lib.dataloaders.image_ops import resize_w_pad
+from seg_lib.dataloaders.seg_dataset import SegGeneralDataset
 
 DEFAULT_SAMPLER = TrainPromptSampler(min_blob_count=10, max_num_prompts=1)
 
@@ -70,7 +65,8 @@ class SamGeneralDataset(SegGeneralDataset):
     def __getitem__(self, i):
         row = dict(self.df.iloc[i])
         image, mask = self.read_img(
-            row['img_name'], row['label_name'], row['subset']))
+            row['img_name'], row['label_name'], row['subset']
+        )
         original_img_size = image.shape[:2]
 
         # resize the images

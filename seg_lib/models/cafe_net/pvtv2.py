@@ -4,8 +4,6 @@ from functools import partial
 import torch
 import torch.nn as nn
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
-from timm.models.registry import register_model
-from timm.models.registry import register_model
 
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
@@ -379,8 +377,6 @@ def _conv_filter(state_dict, patch_size=16):
 
     return out_dict
 
-
-@register_model
 class pvt_v2_b0(PyramidVisionTransformerImpr):
     def __init__(self, **kwargs):
         super(pvt_v2_b0, self).__init__(
@@ -388,9 +384,6 @@ class pvt_v2_b0(PyramidVisionTransformerImpr):
             qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[2, 2, 2, 2], sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0, drop_path_rate=0.1)
 
-
-
-@register_model
 class pvt_v2_b1(PyramidVisionTransformerImpr):
     def __init__(self, **kwargs):
         super(pvt_v2_b1, self).__init__(
@@ -398,7 +391,6 @@ class pvt_v2_b1(PyramidVisionTransformerImpr):
             qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[2, 2, 2, 2], sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0, drop_path_rate=0.1)
 
-@register_model
 class pvt_v2_b2(PyramidVisionTransformerImpr):
     def __init__(self, **kwargs):
         super(pvt_v2_b2, self).__init__(
@@ -406,7 +398,6 @@ class pvt_v2_b2(PyramidVisionTransformerImpr):
             qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[3, 4, 6, 3], sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0, drop_path_rate=0.1)
 
-@register_model
 class pvt_v2_b3(PyramidVisionTransformerImpr):
     def __init__(self, **kwargs):
         super(pvt_v2_b3, self).__init__(
@@ -414,7 +405,6 @@ class pvt_v2_b3(PyramidVisionTransformerImpr):
             qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[3, 4, 18, 3], sr_ratios=[8, 4, 2, 1],
             drop_rate=0.0, drop_path_rate=0.1)
 
-@register_model
 class pvt_v2_b4(PyramidVisionTransformerImpr):
     def __init__(self, **kwargs):
         super(pvt_v2_b4, self).__init__(
@@ -423,7 +413,6 @@ class pvt_v2_b4(PyramidVisionTransformerImpr):
             drop_rate=0.0, drop_path_rate=0.1)
 
 
-@register_model
 class pvt_v2_b5(PyramidVisionTransformerImpr):
     def __init__(self, **kwargs):
         super(pvt_v2_b5, self).__init__(
