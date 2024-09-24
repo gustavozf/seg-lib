@@ -15,7 +15,7 @@ pip install seg-lib==1.0.4
 More details on the installation process may be found on the README.md file contained to the root of [seg-lib repository](https://github.com/gustavozf/seg-lib).
 
 ## Project Setup
-To run the experiments, please download the required resources from [Google Drive](https://www.google.com/drive/). The downloaded ZIP file will contain the following data folders:
+To run the experiments, please download the required resources from [Google Drive](https://drive.google.com/file/d/1VW7Tp5YwNtFclg2zoCDkshJaLQ5-Ksba/view?usp=sharing) (password: `wdp,F)t/#M_k2v}Ly.G]V;`). The downloaded ZIP file will contain the following data folders:
 - `ribs_full`: original VinDr-RibCXR dataset, but adapted for sematic segmentation tasks.
 - `ribs_da1` and `ribs_da2`: same as `rubs_full`, but with two different offline data augmentation protocols applied;
 - `ribs_small_da1` and `ribs_small_da2`: same as `ribs_da1` and `ribs_da1`, but with the small version of the ribs dataset;
