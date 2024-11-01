@@ -1,7 +1,7 @@
 import argparse
-import cv2
 import os
 
+import cv2
 from tqdm import tqdm
 
 from seg_lib.io.labelme import PointFormatter, Labelme2Yolov8
