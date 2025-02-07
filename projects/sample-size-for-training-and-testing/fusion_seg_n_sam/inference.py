@@ -177,7 +177,7 @@ def main():
         # read the label
         label_path = os.path.join(base_path, 'label', row['label_name'])
         label = cv2.imread(label_path, 0)
-        label[label > 1] = 1
+        label[label > 0] = 1
         
         # read the logits for sampling the input prompts.
         # if the we are running in oracle mode, the label will be the logits.

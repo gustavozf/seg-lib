@@ -16,16 +16,19 @@ This project is structured as follows:
 ## Projects
 Under the `projects/` path, you can find the source code used in our developed articles. Please refer to the `README.md` file in each individual project for more details on how to execute them. A brief description of each project is provided below.
 
-### improving-existing-segmentators-performance
-Cloned repository of the article (with an additional notebook used for experimentation):
-- **Title**: [Improving Existing Segmentators Performance with Zero-Shot Segmentators](https://www.mdpi.com/1099-4300/25/11/1502)
-- **Authors**:  Loris Nanni, Daniel Fusaro, Carlo Fantozzi and Alberto Pretto
-- **Journal**: Entropy
+### enseg-dataset
+Sources developed for the Article:
+Scripts developed for the book chapter:
+- **Title**: [ENSeg: A Novel Dataset and Method for the Segmentation of Enteric Neuron Cells on Microscopy Images](https://www.mdpi.com/2076-3417/15/3/1046)
+- **Authors**: Gustavo Zanoni Felipe, Loris Nanni, Isadora Goulart Garcia, Jacqueline Nelisis Zanoni and Yandre Maldonado e Gomes da Costa 
+- **Journal**: Applied Sciences
 - **Publisher**: MDPI
-- **Year**: 2023
-- **DOI**: https://doi.org/10.3390/e25111502
+- **Year**: 2025
+- **DOI**: https://www.mdpi.com/2076-3417/15/3/1046
 
-Please refer to the [original repository](https://github.com/LorisNanni/Improving-existing-segmentators-performance-with-zero-shot-segmentators) for more details. The full citation may be found at `projects/improving-existing-segmentators-performance/CITATION.bib`.
+For details on how to execute the sources, please refer to the README.md located at `projects/enseg-dataset/README.md`. Also, the full citation may be found at `projects/enseg-dataset/CITATION.bib`.
+
+---
 
 ### sample-size-for-training-and-testing
 Scripts developed for the book chapter:
@@ -37,6 +40,19 @@ Scripts developed for the book chapter:
 - **DOI**: https://doi.org/10.1007/978-3-031-65430-5_6
 
 For details on how to execute the sources, please refer to the README.md located at `projects/sample-size-for-training-and-testing/README.md`. Also, the full citation may be found at `projects/sample-size-for-training-and-testing/CITATION.bib`.
+
+---
+
+### improving-existing-segmentators-performance
+Cloned repository of the article (with an additional notebook used for experimentation):
+- **Title**: [Improving Existing Segmentators Performance with Zero-Shot Segmentators](https://www.mdpi.com/1099-4300/25/11/1502)
+- **Authors**:  Loris Nanni, Daniel Fusaro, Carlo Fantozzi and Alberto Pretto
+- **Journal**: Entropy
+- **Publisher**: MDPI
+- **Year**: 2023
+- **DOI**: https://doi.org/10.3390/e25111502
+
+Please refer to the [original repository](https://github.com/LorisNanni/Improving-existing-segmentators-performance-with-zero-shot-segmentators) for more details. The full citation may be found at `projects/improving-existing-segmentators-performance/CITATION.bib`.
 
 ## Installation
 To install the library, ensure that Python 3.10 is set up on your machine. We strongly recommend that the user creates a [conda](https://docs.anaconda.com/miniconda/miniconda-install/) environment, as in:
@@ -75,7 +91,7 @@ pip install dist/seg_lib-1.0.4-py3-none-any.whl
 If all of the steps were followed correctly, everything should be set up.
 The pre-built `wheel` file may be also found in the `dist/` folder, contained in this repository. 
 
-## Data Input Format
+## Trainer Data Input Format
 Our dataloaders expects that the data are described in a CSV file, contained in a `metadata` folder existing in the data path. In order to set the data in the desired format, please follow the steps described as follows:
 
 1. create a folder called `metadata`, such as: `/path/to/your/data/metadata`

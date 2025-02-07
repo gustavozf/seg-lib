@@ -19,9 +19,15 @@ class Sampler:
             mode: str = 'grid', erode_grid: bool = False):
         self.sampling_step  = sampling_step
         self.min_blob_count = min_blob_count
-        self.mode = mode
         self.erode_grid = erode_grid
     
+        if mode not in self.SAMPLING_MODES:
+            raise ValueError(
+                f'Mode {mode} not supported. '
+                f'Possible values: {self.SAMPLING_MODES}'
+            )
+        self.mode = mode
+
     def sample_pixels(
             self,
             mask_of_blobs: np.ndarray,
