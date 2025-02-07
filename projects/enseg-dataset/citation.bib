@@ -1,0 +1,18 @@
+@Article{felipe25enseg,
+    AUTHOR = {
+        Felipe, Gustavo Zanoni
+        and Nanni, Loris
+        and Garcia, Isadora Goulart
+        and Zanoni, Jacqueline Nelisis
+        and Costa, Yandre Maldonado e Gomes da},
+    TITLE = {ENSeg: A Novel Dataset and Method for the Segmentation of Enteric Neuron Cells on Microscopy Images},
+    JOURNAL = {Applied Sciences},
+    VOLUME = {15},
+    YEAR = {2025},
+    NUMBER = {3},
+    ARTICLE-NUMBER = {1046},
+    URL = {https://www.mdpi.com/2076-3417/15/3/1046},
+    ISSN = {2076-3417},
+    ABSTRACT = {The Enteric Nervous System (ENS) is a dynamic field of study where researchers devise sophisticated methodologies to comprehend the impact of chronic degenerative diseases on Enteric Neuron Cells (ENCs). These investigations demand labor-intensive effort, requiring manual selection and segmentation of each well-defined cell to conduct morphometric and quantitative analyses. However, the scarcity of labeled data and the unique characteristics of such data limit the applicability of existing solutions in the literature. To address this, we introduce a novel dataset featuring expert-labeled ENC called ENSeg, which comprises 187 images and 9709 individually annotated cells. We also introduce an approach that combines automatic instance segmentation models with Segment Anything Model (SAM) architectures, enabling human interaction while maintaining high efficiency. We employed YOLOv8, YOLOv9, and YOLOv11 models to generate segmentation candidates, which were then integrated with SAM architectures through a fusion protocol. Our best result achieved a mean DICE score (mDICE) of 0.7877, using YOLOv8 (candidate selection), SAM, and a fusion protocol that enhanced the input point prompts. The resulting combination protocols, demonstrated after our work, exhibit superior segmentation performance compared to the standalone segmentation models. The dataset comes as a contribution to this work and is available to the research community.},
+    DOI = {10.3390/app15031046}
+}
