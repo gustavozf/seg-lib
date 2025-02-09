@@ -73,7 +73,7 @@ The library can be installed by executing the following [pip](https://pypi.org/p
 # install the latest version
 pip install seg-lib
 # or install a target version
-pip install seg-lib==1.0.4
+pip install seg-lib==1.0.5
 ```
 
 ### Using the Local Build

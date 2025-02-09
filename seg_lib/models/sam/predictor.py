@@ -27,6 +27,7 @@ class SamPredictor:
         """
         super().__init__()
         self.model = sam_model
+        self.mask_threshold = self.model.mask_threshold
         self.transform = ResizeLongestSide(sam_model.image_encoder.img_size)
         self.reset_image()
 

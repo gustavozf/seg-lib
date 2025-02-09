@@ -2,7 +2,6 @@ from argparse import Namespace
 
 from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
-from sam2.utils.misc import variant_to_config_mapping
 
 from seg_lib.models.cafe_net.pvt import CAFE
 from seg_lib.models.pvt_v2.pvt_v2_seg import SegPVT
@@ -19,6 +18,7 @@ SEG_MODELS = {
 SAM_PREDICTORS = {
     'SAM': SamPredictor,
     'SAMv2': SAM2ImagePredictor,
+    'SAMv2.1': SAM2ImagePredictor,
     'SAM-Med2D': SamMed2DPredictor,
     'SAMUS': SamusPredictor
 }
@@ -27,11 +27,23 @@ SAM_INPUT_SIZES = {
     'SAM-Med2D': {'input_size': 256, 'embedding_size': 256},
     'SAMUS': {'input_size': 256, 'embedding_size': 128}
 }
+SAMV2_CONFIGS = {
+    'hiera_t': 'configs/sam2/sam2_hiera_t.yaml',
+    'hiera_s': 'configs/sam2/sam2_hiera_s.yaml',
+    'hiera_b+': 'configs/sam2/sam2_hiera_b+.yaml',
+    'hiera_l': 'configs/sam2/sam2_hiera_l.yaml'
+}
+SAMV2_1_CONFIGS = {
+    'hiera_t': 'configs/sam2.1/sam2.1_hiera_t.yaml',
+    'hiera_s': 'configs/sam2.1/sam2.1_hiera_s.yaml',
+    'hiera_b+': 'configs/sam2.1/sam2.1_hiera_b+.yaml',
+    'hiera_l': 'configs/sam2.1/sam2.1_hiera_l.yaml'
+}
 
 SUPPORTED_SEG_MODELS = set(SEG_MODELS.keys())
 SUPPORTED_SAM_MODELS = set(SAM_PREDICTORS.keys())
 SUPPORTED_MODEL_TYPES = {'default', 'vit_h' 'vit_l', 'vit_b'}
-SUPPORTED_SAMv2_TYPES = set(variant_to_config_mapping.keys())
+SUPPORTED_SAMV2_TYPES = set(SAMV2_CONFIGS.keys())
 
 def seg_selector(
         checkpoint_path: str,
@@ -55,11 +67,21 @@ def build_sam_model(
 
 def build_samv2_model(
         checkpoint_path: str,
-        model_type: str = 'default',
+        model_type: str = 'hiera_b+',
         device: str = 'cpu'):
-    samv2 = build_sam2(variant_to_config_mapping[model_type], checkpoint_path)
-    samv2.to(device)
-    return samv2
+    return build_sam2(
+        SAMV2_CONFIGS[model_type],
+        checkpoint_path,
+        device=device)
+
+def build_samv2_1_model(
+        checkpoint_path: str,
+        model_type: str = 'hiera_b+',
+        device: str = 'cpu'):
+    return build_sam2(
+        SAMV2_1_CONFIGS[model_type],
+        checkpoint_path,
+        device=device)
 
 def build_sam_med_2d_model(checkpoint_path: str, device: str = 'cpu'):
     args = Namespace()
@@ -94,6 +116,10 @@ def sam_selector(
         return build_sam_med_2d_model(checkpoint_path, device=device)
     if model_topology ==  'SAMv2':
         return build_samv2_model(
+            checkpoint_path, model_type=model_type, device=device
+        )
+    if model_topology ==  'SAMv2.1':
+        return build_samv2_1_model(
             checkpoint_path, model_type=model_type, device=device
         )
 

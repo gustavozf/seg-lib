@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "seg-lib"
-version = "1.0.4"
+version = "1.0.5"
 description = "A library for the development of segmentation models."
 authors = [
     "Gustavo Zanoni <gzf1996@gmail.com>"
@@ -18,7 +18,7 @@ pyarrow = ">=15.0.0"
 pytest = ">=8.3.3"
 scipy = ">=1.12.0"
 scikit-learn = ">=1.5.2"
-samv2 = ">=0.0.4"
+SAM-2 = { git = "https://github.com/facebookresearch/sam2.git", branch = "main" }
 timm = ">=0.9.12"
 torch = ">=2.1.2"
 torchvision = ">=0.16.2"

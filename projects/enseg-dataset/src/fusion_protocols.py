@@ -50,7 +50,11 @@ class FusionProtocol1:
         print('Generating YOLO predictions...')
         preds = self.yolo.predict(imgs, verbose=False)
         original_img_sizes = [pred.orig_shape for pred in preds]
-        pred_xy = [pred.masks.xy for pred in preds]
+
+        pred_xy = [
+            [] if pred.masks is None else pred.masks.xy
+            for pred in preds
+        ]
         del preds
 
         return pred_xy, original_img_sizes
