@@ -8,10 +8,10 @@ from seg_lib.io.files import read_json
 from seg_lib.models.selector import predictor_selector
 from seg_lib.models.device import CLEAN_CACHE, get_device
 
-from src.sam_inference import SamSingleInference, SamSingleRandomInference
+from src.sam_inference import SamOracleInference, SamRandomInference
 
 SUBJECT_TAGS = ['2C', '4C', '5C', '22TW', '23TW', '28TW']
-INFER_CLASSES = [SamSingleRandomInference, SamSingleInference]
+INFER_CLASSES = [SamRandomInference, SamOracleInference]
 
 def get_args():
     parser = argparse.ArgumentParser(description="Evaluate SAM models")

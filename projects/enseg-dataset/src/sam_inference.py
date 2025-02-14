@@ -3,9 +3,9 @@ import numpy as np
 from seg_lib.eval.metrics import Metrics
 from seg_lib.io.image import img_b64_to_arr
 
-class SamSingleInference:
+class SamOracleInference:
     input_color = 'RGB'
-    eval_mode = 'SINGLE'
+    eval_mode = 'ORACLE'
 
     def __init__(self, predictor):
         self.predictor = predictor
@@ -73,7 +73,7 @@ class SamSingleInference:
             self.metrics['bbox'].step(bbox_mask, gt)
             self.metrics['comb'].step(comb_mask, gt)
 
-class SamSingleRandomInference(SamSingleInference):
+class SamRandomInference(SamOracleInference):
     eval_mode = 'RANDOM'
 
     def randomiz_bbox(self, bbox: np.ndarray, img_size: tuple[int]):

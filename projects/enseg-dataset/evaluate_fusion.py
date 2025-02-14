@@ -8,7 +8,7 @@ from seg_lib.models.device import CLEAN_CACHE, get_device
 import argparse
 
 from src.fusion_protocols import (
-    FusionProtocol1,
+    FusionProtocol,
     FusionProtocol2,
     FusionProtocol3,
     FusionProtocol4
@@ -38,7 +38,7 @@ def parse_args():
 
 def evaluate(
         protocol_name: str,
-        protocol_class: FusionProtocol1,
+        protocol_class: FusionProtocol,
         data_path: str = 'data/',
         output_path: str = 'output/',
         yolo_model_path: str = 'yolo/',
@@ -97,7 +97,7 @@ def main():
     args = parse_args()
     device = get_device()
     eval_configs = [
-        ('protocol_1', FusionProtocol1),
+        ('protocol_1', FusionProtocol),
         ('protocol_2', FusionProtocol2),
         ('protocol_3', FusionProtocol3),
         ('protocol_4', FusionProtocol4),

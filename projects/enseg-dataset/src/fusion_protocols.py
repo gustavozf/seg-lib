@@ -8,7 +8,7 @@ from seg_lib.io.files import read_json
 from seg_lib.eval.metrics import Metrics
 from seg_lib.io.image import img_b64_to_arr
 
-class FusionProtocol1:
+class FusionProtocol:
     '''
         Candidate-first: if `p` in `c`, consider `c` as the final output
         and `s` otherwise;
@@ -20,8 +20,6 @@ class FusionProtocol1:
         self.th = sam.model.mask_threshold
 
     def get_fixed_clicks(self, mask: np.ndarray):
-        # idxes = np.argwhere(mask == 1)[:, [1,0]]
-        # return np.array([idxes[idxes.shape[0]//2]])
         y_indices, x_indices = np.nonzero(mask)
         n = len(x_indices) // 2
 
@@ -102,7 +100,12 @@ class FusionProtocol1:
         imgs, gt_shapes = self.load_imgs_from_labelme(labels_paths)
         cndts_xy, original_img_sizes = self.predict_candidates(imgs)
 
-        # for each image
+        # Note: the following loop is inefficient, because it runs
+        # individual inferences for each polyhon. It was kept here
+        # to maintain the same structure as the ones used in obtaining
+        # the results for the paper.
+        # Please, check `seg_lib.models.sam.inference.SamInference` for
+        # a more efficient way to run the inference.
         for i in tqdm(range(len(imgs))):
             self.sam.set_image(imgs[i])
             base_mask = np.zeros(original_img_sizes[i])
@@ -138,7 +141,7 @@ class FusionProtocol1:
             'num_pred_objs': num_pred_objs
         }
     
-class FusionProtocol2(FusionProtocol1):
+class FusionProtocol2(FusionProtocol):
     def apply_protocol(self, prompt, best_cand_id, candts_pts, base_mask):
         '''
           Prompt refinement: if `p` in `c`, calculate a bounding box from `c`
@@ -157,7 +160,7 @@ class FusionProtocol2(FusionProtocol1):
 
         return self.predict_sam(box=np.array([[x_min, y_min, x_max, y_max]]))
     
-class FusionProtocol3(FusionProtocol1):
+class FusionProtocol3(FusionProtocol):
     def apply_protocol(self, prompt, best_cand_id, candts_pts, base_mask):
         '''
           Segmentation fusion: if `p` in `c`, combine both `c` and `s` using a
@@ -173,7 +176,7 @@ class FusionProtocol3(FusionProtocol1):
 
         return (best_mask.astype(bool) & sam_pred.astype(bool)).astype(int)
     
-class FusionProtocol4(FusionProtocol1):
+class FusionProtocol4(FusionProtocol):
     def apply_protocol(self, prompt, best_cand_id, candts_pts, base_mask):
         '''
           Prompt refinement w/ segmentation fusion: similar to Protocol 2,

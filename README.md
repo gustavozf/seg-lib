@@ -1,7 +1,7 @@
 # SegLib: A library for the development of segmentation models
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
 
-`SegLib` was developed in a partnership between researchers from the [Università degli Studi di Padova (Italy)](https://www.unipd.it/) and the [Universidade Estadual de Maringá (Brazil)](https://www.uem.br/). It provides an interface designed to support the development of segmentation models such as PolyPVT (referred to here as SegPVT), CAFE-net, SAM, SAMv2, SAMUS, SAM-Med2D, and others. The library includes these models in PyTorch format, along with standard training classes, predictors (for SAM-like architectures), data loaders, data augmentation pipelines, and more.
+[`SegLib`](https://github.com/gustavozf/seg-lib) was developed in a partnership between researchers from the [Università degli Studi di Padova (Italy)](https://www.unipd.it/) and the [Universidade Estadual de Maringá (Brazil)](https://www.uem.br/). It provides an interface designed to support the development of segmentation models such as PolyPVT (referred to here as SegPVT), CAFE-net, SAM, SAMv2, SAMUS, SAM-Med2D, and others. The library includes these models in PyTorch format, along with standard training classes, predictors (for SAM-like architectures), data loaders, data augmentation pipelines, and more.
 
 The library is currently being used for the development of various projects, which can be found under the `projects` subpath. More details about these projects can be found in the following subsections.
 
@@ -85,7 +85,7 @@ pip install poetry
 # build the library using poetry
 poetry build
 # install the built wheel file
-pip install dist/seg_lib-1.0.4-py3-none-any.whl
+pip install dist/seg_lib-1.0.5-py3-none-any.whl
 ```
 
 If all of the steps were followed correctly, everything should be set up.

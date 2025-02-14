@@ -28,6 +28,14 @@ def get_config_txt(
         train_ids: list[str],
         val_id: str
     ) -> str:
+    """ This function generates the configuration file for 
+        training the YOLO model. It is used to train the model
+        with the ultralytics library.
+
+        This is just an example of how the configuration file
+        should look like. It is not the actual configuration
+        file used in the project.
+    """
     train_paths = [
         f'{_id}/seg/images'
         for _id in train_ids

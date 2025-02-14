@@ -61,7 +61,7 @@ class SegGeneralDataset(Dataset):
             image = to_grayscale(image)
 
         if self.get_num_classes(subset) == 2:
-            mask[mask > 1] = 1
+            mask[mask > 0] = 1
 
         return image, mask
     
