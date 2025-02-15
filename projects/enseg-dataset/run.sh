@@ -17,10 +17,10 @@ done
 python train_yolo_seg.py \
     --data_path $OUTPUT_PATH/yolo_data/ \
     --output_path $OUTPUT_PATH/yolo_seg/ \
-    --epochs 2 \
+    --epochs 100 \
     --train_batch_size -1 \
     --val_batch_size 2 \
-    --img_size 640
+    --image_size 640
 
 python evaluate_sam.py \
     --data_path $DATA_PATH \

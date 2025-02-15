@@ -78,10 +78,10 @@ Although **cross-validation is recommended**, it is **not mandatory**. Future wo
 This dataset provides a valuable resource for **instance segmentation** and **biomedical image analysis**, supporting research on ENS morphology and cancer effects. Contributions and feedback are welcome!
 
 ## Dependency installation
-To run the here presented source codes, it is required that the user has the `seg-lib` library installed on version `1.0.4`:
+To run the here presented source codes, it is required that the user has the `seg-lib` library installed on version `1.0.5`:
 
 ```bash
-pip install seg-lib==1.0.4
+pip install seg-lib==1.0.5
 ```
 
 More details on the installation process may be found on the README.md file contained to the root of [seg-lib repository](https://github.com/gustavozf/seg-lib).
@@ -90,6 +90,7 @@ More details on the installation process may be found on the README.md file cont
 First, download the dataset from one of the sources:
 - [HuggingFace](https://huggingface.co/datasets/gustavozf/enseg)
 - [Kaggle](https://www.kaggle.com/datasets/gustavozanonifelipe/enseg-dataset)
+- [Zenodo](https://zenodo.org/records/14834973)
 - [paperswithcode](https://paperswithcode.com/dataset/enseg)
 
 Place it under a directory (`$DATA_PATH`). As mentioned previously, the dataset is made available in the LabelMe format. To use it for training the YOLO models, the following script may be used for converting them to the target format:
