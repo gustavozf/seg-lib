@@ -76,6 +76,13 @@ pip install seg-lib
 pip install seg-lib==1.0.5
 ```
 
+Please note, for version 1.0.5 and above, it is required that the following library is pre-installed in your working environment:
+```bash
+pip install git+https://github.com/facebookresearch/sam2.git
+```
+
+Due to an incompatibility in PyPi regarding Git-referenced packages, we are unable to package this library alongside ours. This issue will be resolved in future iterations.
+
 ### Using the Local Build
 To build the library locally, clone this repository to a local machine and run the following commands from the project's root directory:
 
