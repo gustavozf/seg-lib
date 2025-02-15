@@ -111,7 +111,7 @@ def main():
             image = to_grayscale(image)
 
             label = cv2.imread(label_path, 0)
-            label[label > 1] = 1
+            label[label > 0] = 1
 
             binary_mask = get_inference(image, label)
             metrics.step(binary_mask, label)

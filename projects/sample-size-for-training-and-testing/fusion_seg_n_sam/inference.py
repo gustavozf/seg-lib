@@ -15,7 +15,7 @@ from seg_lib.models.sam import SamPredictor
 from seg_lib.models.device import CLEAN_CACHE
 from seg_lib.models.selector import (
     predictor_selector, SUPPORTED_MODEL_TYPES,
-    SUPPORTED_SAM_MODELS, SUPPORTED_SAMv2_TYPES
+    SUPPORTED_SAM_MODELS, SUPPORTED_SAMV2_TYPES
 )
 
 N_GPUS = torch.cuda.device_count()
@@ -81,7 +81,7 @@ def get_args():
         '--sam_model_topology',
         required=False, type=str,
         default='SAMUS',
-        choices=SUPPORTED_SAM_MODELS,
+        choices=SUPPORTED_SAM_MODELS.union(SUPPORTED_SAMV2_TYPES),
         help='Topology name of the SAM model to be loaded.')
     parser.add_argument(
         '--sam_model_type',

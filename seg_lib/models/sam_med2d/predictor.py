@@ -25,13 +25,12 @@ from torch.nn import functional as F
 
 class SamMed2DPredictor:
     def __init__(self, sam_model):
-
         super().__init__()
         self.model = sam_model
+        self.mask_threshold = self.model.mask_threshold
         self.devices = sam_model.device
         self.reset_image()
         
-
     def set_image(self,image: np.ndarray, image_format: str = "RGB") -> None:
         assert image_format in ["RGB","BGR",], f"image_format must be in ['RGB', 'BGR'], is {image_format}."
         if image_format != self.model.image_format:

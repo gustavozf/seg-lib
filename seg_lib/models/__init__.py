@@ -6,7 +6,7 @@ from seg_lib.models.sam_med2d import (
 from seg_lib.models.selector import (
     sam_selector, predictor_selector, seg_selector,
     SUPPORTED_SEG_MODELS, SUPPORTED_MODEL_TYPES,
-    SUPPORTED_SAM_MODELS, SUPPORTED_SAMv2_TYPES,
+    SUPPORTED_SAM_MODELS, SUPPORTED_SAMV2_TYPES,
     SAM_INPUT_SIZES
 )
 
