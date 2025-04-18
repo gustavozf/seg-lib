@@ -11,6 +11,7 @@ class SamMed2dInference(SamInference):
             model_type='vit_b',
             device=device)
         self.th = self.predictor.mask_threshold
+        self.device = device
 
     def segment_bbox(self, boxes: list = None):
         if boxes is None or len(boxes) == 0:

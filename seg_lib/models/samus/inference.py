@@ -9,3 +9,4 @@ class SamusInference(SamInference):
             model_type='vit_b',
             device=device)
         self.th = self.predictor.mask_threshold
+        self.device = device
