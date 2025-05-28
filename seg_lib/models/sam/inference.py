@@ -35,6 +35,10 @@ class SamInference:
         if isinstance(scores, torch.Tensor):
             scores = scores.cpu().numpy()
         
+        if masks.ndim == 3 and scores.ndim == 1:
+            masks = masks[None, ...]
+            scores = scores[None, ...]
+
         best_scores = np.argmax(scores, axis=1)
         unified_mask = np.zeros(size, dtype=bool)
         for i in range(len(scores)):
