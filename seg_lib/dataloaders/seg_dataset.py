@@ -10,7 +10,6 @@ from seg_lib.dataloaders.data_aug import BaseAugmenter
 from seg_lib.dataloaders.image_ops import resize_w_pad, to_grayscale
 from seg_lib.io.image import read_img as read_img_cv
 
-
 class SegGeneralDataset(Dataset):
     """
     Reads the images and applies the augmentation transform on them.
