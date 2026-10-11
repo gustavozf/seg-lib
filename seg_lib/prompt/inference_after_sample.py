@@ -22,7 +22,7 @@ class MaskInferenceAfterSample:
     
     def __set_point_sampler(self, sampler):
         if sampler is None:
-            return lambda _: None, None
+            return lambda _: (None, None)
 
         return sampler
 

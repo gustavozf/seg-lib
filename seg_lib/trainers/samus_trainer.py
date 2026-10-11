@@ -27,6 +27,7 @@ class SamusModelTrainer(SegmentationModelTrainer):
         }, multimask_output=False)
         train_loss = self.loss_f(preds['low_res_logits'], low_masks) 
         # backward
+        self._set_warmup_lr()
         self.optm.zero_grad()
         train_loss.backward()
         self.optm.step()
@@ -56,7 +57,7 @@ class SamusModelTrainer(SegmentationModelTrainer):
         return val_loss.item(), end_time, low_masks.shape[0]
     
     def fit(self, *args, **kwargs):
-        out_path = kwargs.get('output_path')
+        out_path = kwargs.get('output_path', 'outputs/')
         plot_dataloader_sample(
             next(iter(args[0])),
             output_path=os.path.join(out_path, 'train_ds_sample.png')

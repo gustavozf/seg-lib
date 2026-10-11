@@ -1,3 +1,4 @@
+import os
 import tempfile
 
 import cv2
@@ -113,11 +114,14 @@ class Normalizer:
 
     @classmethod
     def cv_norm(cls, logits, to_prob: bool = False):
-        with tempfile.NamedTemporaryFile(
-            prefix='logits_', suffix='.jpg', mode='w'
-        ) as tmp_dir:
-            cv2.imwrite(tmp_dir.name, logits*255)
-            norm_logits = cv2.imread(tmp_dir.name)[:, :, 0]
+        fd, tmp_path = tempfile.mkstemp(prefix='logits_', suffix='.jpg')
+        os.close(fd)
+        try:
+            cv2.imwrite(tmp_path, logits * 255)
+            norm_logits = cv2.imread(tmp_path)[:, :, 0]
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
 
         if to_prob:
             return norm_logits / 255.0

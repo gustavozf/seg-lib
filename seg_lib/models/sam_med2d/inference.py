@@ -32,6 +32,9 @@ class SamMed2dInference(SamInference):
         return self.unify_mask(out_size, np.array(masks_local), np.array(scores_local))
 
     def segment_bbox(self, boxes: list = None):
+        if boxes is None or len(boxes) == 0:
+            return None
+
         sam_input = [
             {
                 "point_coords": None,
@@ -43,6 +46,9 @@ class SamMed2dInference(SamInference):
         return self.predict(sam_input)
 
     def segment_point(self, points: list = None):
+        if points is None or len(points) == 0:
+            return None
+
         sam_input = [
             {
                 "point_coords": np.array(point[None, ...]),

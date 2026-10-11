@@ -38,8 +38,8 @@ class Metrics:
         fp = np.logical_and(~y_true_bool, y_pred_bool).sum()
         fn = np.logical_and(y_true_bool, ~y_pred_bool).sum()
 
-        if  (tp + fn + fp) == 0:
-            return 1.0 if tp==1.0 else 0.0
+        if (tp + fn + fp) == 0:
+            return 1.0
 
         return tp / (tp + fn + fp)
 
@@ -70,7 +70,7 @@ class Metrics:
     def get_f_beta_measure(self, pred, gt, beta=sqrt(0.3)):
         tp, fp, _, fn = self.cal_confusion(pred, gt)
 
-        if (tp + fn + fn) == 0:
+        if (tp + fp + fn) == 0:
             return 1.0 if tp == 0 else 0.0
         
         precision = tp / (tp + fp + 1e-8)
@@ -121,7 +121,4 @@ class Metrics:
 METRICS_PER_DATASET = {'common': Metrics}
 
 def select_metric_from_dataset(dataset_name: str):
-    if dataset_name in {'locuste', 'skin'}:
-        return METRICS_PER_DATASET[dataset_name]
-    
-    return METRICS_PER_DATASET['common']
+    return METRICS_PER_DATASET.get(dataset_name, METRICS_PER_DATASET['common'])
