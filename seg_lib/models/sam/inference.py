@@ -19,6 +19,7 @@ class SamInference:
             model_type=encoder_type,
             device=device)
         self.th = self.predictor.mask_threshold
+        self.device = device
 
     def clear(self):
         logger.debug("Resetting SAM image")
@@ -28,7 +29,16 @@ class SamInference:
         logger.debug("Setting SAM image")
         self.predictor.set_image(image)
 
-    def unify_mask(self, size, masks, scores):
+    def unify_mask(self, size, masks, scores) -> np.ndarray:
+        if isinstance(masks, torch.Tensor):
+            masks = masks.cpu().numpy()
+        if isinstance(scores, torch.Tensor):
+            scores = scores.cpu().numpy()
+        
+        if masks.ndim == 3 and scores.ndim == 1:
+            masks = masks[None, ...]
+            scores = scores[None, ...]
+
         best_scores = np.argmax(scores, axis=1)
         unified_mask = np.zeros(size, dtype=bool)
         for i in range(len(scores)):
@@ -42,7 +52,7 @@ class SamInference:
             return None
         
         logger.debug("Segmenting Bounding Boxes")
-        boxes = torch.tensor(boxes, device=self.predictor.device)
+        boxes = torch.tensor(boxes, device=self.device)
         boxes = self.predictor.transform.apply_boxes_torch(
             boxes, self.predictor.original_size
         )
@@ -62,13 +72,13 @@ class SamInference:
             return None
 
         logger.debug("Segmenting Points")
-        points = torch.tensor(points, device=self.predictor.device)
+        points = torch.tensor(points, device=self.device)
         points = points[:, None, ...] # adds an additional axis
         points = self.predictor.transform.apply_coords_torch(
             points, self.predictor.original_size
         )
         labels = [[1] for _ in range(len(points))]
-        labels = torch.tensor(labels, device=self.predictor.device)
+        labels = torch.tensor(labels, device=self.device)
 
         masks, scores, _ = self.predictor.predict_torch(
             point_coords=points,
@@ -82,8 +92,8 @@ class SamInference:
 
     def segment(self, points: list = None, boxes: list = None):
         logger.debug("Running SAM inference")
-        points_masks = self.segment_point(points)
-        bbox_masks = self.segment_bbox(boxes)
+        points_masks = self.segment_point(np.array(points))
+        bbox_masks = self.segment_bbox(np.array(boxes))
         
         if points_masks is None and bbox_masks is None:
             return None

@@ -16,6 +16,7 @@ class Sam2Inference(SamInference):
             model_type=encoder_type,
             device=device)
         self.th = self.predictor.mask_threshold
+        self.device = device
 
     def segment_bbox(self, boxes: list = None):
         if boxes is None or len(boxes) == 0:

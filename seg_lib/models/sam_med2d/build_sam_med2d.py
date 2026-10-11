@@ -113,7 +113,9 @@ def _build_sam(
     # sam.train()
     if checkpoint is not None:
         with open(checkpoint, "rb") as f:
-            state_dict = torch.load(f, map_location="cpu")
+            state_dict = torch.load(
+                f, map_location="cpu", weights_only=False
+            )
         try:
             if 'model' in state_dict.keys():
                 print(encoder_adapter)
