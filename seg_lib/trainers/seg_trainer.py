@@ -9,6 +9,17 @@ from torch.utils.data import DataLoader
 
 from seg_lib.eval.metrics import Metrics
 
+def merge_heads(preds):
+    '''Sums the logits of multi-head models (Polyp-PVT convention).
+       Single-tensor outputs are returned unchanged.'''
+    if not isinstance(preds, tuple):
+        return preds
+
+    merged = preds[0]
+    for pred in preds[1:]:
+        merged = merged + pred
+    return merged
+
 class SegmentationModelTrainer:
     DEFAULT_MASK_TH = 0.5
 
@@ -65,21 +76,23 @@ class SegmentationModelTrainer:
         num_train_batches = len(train_ds)
 
         train_losses = 0.0
+        n_batches = 0
         p_bar = tqdm(range(num_train_batches), desc='Train')
-        for batch_idx, (batch) in enumerate(train_ds):
+        for batch in train_ds:
             train_loss = self.train_step(batch)
             train_losses += train_loss
+            n_batches += 1
             
             p_bar.update(1)
-            batch_loss = train_loss
-            mean_loss = train_losses / (batch_idx + 1)
-            p_bar.set_postfix({'loss': batch_loss, 'mean_loss': mean_loss})
+            p_bar.set_postfix({
+                'loss': train_loss, 'mean_loss': train_losses / n_batches
+            })
             self.iter_num += 1
         p_bar.close()
 
-        # batch_idx + 1 == number of processed batches
-        # train_losses / (batch_idx + 1) == mean train loss
-        return train_losses / (batch_idx + 1)
+        if n_batches == 0:
+            return 0.0
+        return train_losses / n_batches
 
     def update_metrics(self, masks, preds):
         masks = masks.detach().cpu().numpy()[:, 0, :, :]
@@ -155,12 +168,13 @@ class SegmentationModelTrainer:
             output_path: str = 'outputs/',
             model_name: str = 'seg_model'):
         # define the output paths
+        os.makedirs(output_path, exist_ok=True)
         best_model_path = os.path.join(output_path, f'best_{model_name}.pth')
         model_path = os.path.join(output_path, f'{model_name}.pth')
         logs_path = os.path.join(output_path, 'logs.csv')
 
         # create the dictionary to save the metrics
-        log_zeros = torch.zeros(n_epochs + 1).numpy()
+        log_zeros = torch.zeros(n_epochs).numpy()
         logs = {
             'loss': log_zeros.copy(),
             'val_loss': log_zeros.copy(),

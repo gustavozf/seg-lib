@@ -112,11 +112,9 @@ class SamusImgAugmenter(object):
     def random_gauss_noise(self, image):
         if np.random.rand() < self.p_gaussn:
             ns = np.random.randint(3, 15)
-            noise = np.random.normal(
-                loc=0, scale=1, size=(self.img_size, self.img_size)
-            ) * ns
-            noise = noise.astype(int)
-            image = np.array(image) + noise
+            image = np.array(image).astype(int)
+            noise = np.random.normal(loc=0, scale=1, size=image.shape) * ns
+            image = image + noise.astype(int)
             image[image > 255] = 255
             image[image < 0] = 0
             image = F.to_pil_image(image.astype('uint8'))
@@ -137,7 +135,7 @@ class SamusImgAugmenter(object):
     def random_affine_transform(self, image, mask):
         if np.random.rand() < self.p_random_affine:
             affine_params = RandomAffine(180).get_params(
-                (-90, 90), (1, 1), (2, 2), (-45, 45), self.crop
+                (-90, 90), (1, 1), (2, 2), (-45, 45), list(image.size)
             )
             image = F.affine(image, *affine_params)
             mask = F.affine(mask, *affine_params)
@@ -167,4 +165,4 @@ class SamusImgAugmenter(object):
         # random affine transform
         image, mask = self.random_affine_transform(image, mask)
 
-        return image, mask
+        return np.array(image), np.array(mask)

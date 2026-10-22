@@ -2,6 +2,7 @@ import argparse
 import os
 import logging
 
+import cv2
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -116,7 +117,10 @@ def main():
 
         # read the label
         label_path = os.path.join(base_path, 'label', row['label_name'])
-        label = read_bmask(label_path)
+        # labels may be stored as 0/1 or 0/255
+        label = (cv2.imread(label_path, cv2.IMREAD_GRAYSCALE) > 0).astype(
+            np.uint8
+        )
         del label_path
 
         # load the segmentation outputs and compare to the ground truth

@@ -72,15 +72,20 @@ def test_build_rejects_unknown_type_and_bad_checkpoints(tmp_path):
 
     missing = tmp_path / 'missing.pt'
     torch.save({'model': {}}, missing)
-    with pytest.raises(RuntimeError, match='Missing key'):
+    with pytest.raises(RuntimeError, match='checkpoint is missing keys'):
         _load_checkpoint(model, str(missing))
 
     extra = model.state_dict()
     extra['not_a_parameter'] = torch.zeros(1)
     unexpected = tmp_path / 'extra.pt'
     torch.save({'model': extra}, unexpected)
-    with pytest.raises(RuntimeError, match='Unexpected key'):
+    with pytest.raises(RuntimeError, match='checkpoint has unexpected keys'):
         _load_checkpoint(model, str(unexpected))
+
+    valid = tmp_path / 'valid.pt'
+    torch.save({'model': model.state_dict()}, valid)
+    _load_checkpoint(model, str(valid))
+    _load_checkpoint(model, None)
 
     sam21 = build_sam2_1('hiera_t', checkpoint=None, device='cpu')
     assert sam21.use_signed_tpos_enc_to_obj_ptrs is True

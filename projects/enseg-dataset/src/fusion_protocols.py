@@ -8,6 +8,8 @@ from seg_lib.io.files import read_json
 from seg_lib.eval.metrics import Metrics
 from seg_lib.io.image import img_b64_to_arr
 
+from src.sam_inference import get_interior_click
+
 class FusionProtocol:
     '''
         Candidate-first: if `p` in `c`, consider `c` as the final output
@@ -17,16 +19,20 @@ class FusionProtocol:
         self.yolo = yolo
         self.sam = sam
         self.metrics = Metrics()
-        self.th = sam.model.mask_threshold
+        self.th = sam.mask_threshold
 
     def get_fixed_clicks(self, mask: np.ndarray):
-        y_indices, x_indices = np.nonzero(mask)
-        n = len(x_indices) // 2
+        return get_interior_click(mask)
 
-        # Compute the centroid
-        centroid_x = sorted(x_indices)[n]
-        centroid_y = sorted(y_indices)[n]
-        return np.array([(centroid_x, centroid_y)])        
+    @staticmethod
+    def get_mask_bbox(mask: np.ndarray):
+        '''XYXY box around the mask, or None if the mask is empty.'''
+        idxes = np.argwhere(mask == 1)[:, [1, 0]]
+        if idxes.shape[0] == 0:
+            return None
+        x_min, y_min = idxes.min(axis=0)
+        x_max, y_max = idxes.max(axis=0)
+        return np.array([[x_min, y_min, x_max, y_max]])
 
     def get_random_clicks(self, mask: np.ndarray):
         idxes = np.argwhere(mask == 1)[:, [1,0]]
@@ -38,7 +44,10 @@ class FusionProtocol:
         print('Loading input images...')
         for label_path in labels_paths:
             data = read_json(label_path)
-            imgs.append(img_b64_to_arr(data['imageData'])[..., [2, 1, 0]])
+            # YOLO expects BGR arrays
+            imgs.append(
+                img_b64_to_arr(data['imageData'], mode='RGB')[..., [2, 1, 0]]
+            )
             shapes.append(data['shapes'])
             del data
 
@@ -107,7 +116,7 @@ class FusionProtocol:
         # Please, check `seg_lib.models.sam.inference.SamInference` for
         # a more efficient way to run the inference.
         for i in tqdm(range(len(imgs))):
-            self.sam.set_image(imgs[i])
+            self.sam.set_image(imgs[i], image_format='BGR')
             base_mask = np.zeros(original_img_sizes[i])
             cndts_xy[i] = [
                 cndt_shape
@@ -154,11 +163,11 @@ class FusionProtocol2(FusionProtocol):
         best_mask = cv2.fillPoly(base_mask.copy(), [best_mask.astype(int)], 1)
         del candts_pts[best_cand_id]
 
-        idxes = np.argwhere(best_mask == 1)[:, [1,0]]
-        x_min, y_min = idxes.min(axis=0)
-        x_max, y_max = idxes.max(axis=0)
+        bbox = self.get_mask_bbox(best_mask)
+        if bbox is None:
+            return self.predict_sam(pt_c=prompt)
 
-        return self.predict_sam(box=np.array([[x_min, y_min, x_max, y_max]]))
+        return self.predict_sam(box=bbox)
     
 class FusionProtocol3(FusionProtocol):
     def apply_protocol(self, prompt, best_cand_id, candts_pts, base_mask):
@@ -190,10 +199,9 @@ class FusionProtocol4(FusionProtocol):
         best_mask = cv2.fillPoly(base_mask.copy(), [best_mask.astype(int)], 1)
         del candts_pts[best_cand_id]
 
-        idxes = np.argwhere(best_mask == 1)[:, [1,0]]
-        x_min, y_min = idxes.min(axis=0)
-        x_max, y_max = idxes.max(axis=0)
-        bbox = np.array([[x_min, y_min, x_max, y_max]])
+        bbox = self.get_mask_bbox(best_mask)
+        if bbox is None:
+            return sam_pred_pt
         sam_pred_bx = self.predict_sam(box=bbox)
         return (
             sam_pred_pt.astype(bool) & sam_pred_bx.astype(bool)

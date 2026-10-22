@@ -91,7 +91,7 @@ def main():
         os.path.join(eval_config.input_path, 'config.json')
     )
     checkpoint_path = os.path.join(
-        train_config['output_path'], f"best_{train_config['model_type']}.pth"
+        eval_config.input_path, f"best_{train_config['model_type']}.pth"
     )
 
     model = build_samus_model(checkpoint_path, device=DEVICE)

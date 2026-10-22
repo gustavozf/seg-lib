@@ -1,7 +1,9 @@
 import time
 
 import torch
-from seg_lib.trainers.seg_trainer import SegmentationModelTrainer
+from seg_lib.trainers.seg_trainer import (
+    SegmentationModelTrainer, merge_heads
+)
 
 class PVTv2ModelTrainer(SegmentationModelTrainer):
     def train_step(self, batch):
@@ -38,16 +40,12 @@ class PVTv2ModelTrainer(SegmentationModelTrainer):
 
         # for outputs with more than 1 output
         if isinstance(preds, tuple):
-            final_preds = preds[0]
-            val_loss = self.loss_f(final_preds, masks)
+            val_loss = self.loss_f(preds[0], masks)
             for i in range(1, len(preds)):
-                final_preds = final_preds + preds[i]
                 val_loss = val_loss + self.loss_f(preds[i], masks)
-
-            preds = final_preds
         else:
             val_loss = self.loss_f(preds, masks)
 
-        self.update_metrics(masks, preds)
+        self.update_metrics(masks, merge_heads(preds))
 
         return val_loss.item(), end_time, masks.shape[0]

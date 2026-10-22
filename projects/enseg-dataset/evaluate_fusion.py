@@ -57,6 +57,11 @@ def evaluate(
         'F-Measure': [],
         'E-Measure': []
     }
+    sam_predictor = predictor_selector(
+        sam_model_path,
+        model_topology='SAM',
+        model_type='vit_b',
+        device=device)
     for tag in SUBJECT_TAGS:
         print('Processing: ', tag)
         target_input = os.path.join(data_path, tag)
@@ -68,14 +73,7 @@ def evaluate(
         yolo_path = os.path.join(
             yolo_model_path, tag, 'train', 'weights', 'best.pt'
         )
-        protocol = protocol_class(
-            YOLO(yolo_path),
-            predictor_selector(
-                sam_model_path,
-                model_topology='SAM',
-                model_type='vit_b',
-                device=device)
-        )
+        protocol = protocol_class(YOLO(yolo_path), sam_predictor)
         metrics = protocol(labels_paths)
 
         out_metrics['animal_tag'].append(tag)

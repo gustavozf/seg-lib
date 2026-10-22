@@ -13,6 +13,7 @@ from seg_lib.io.image import (
     read_rmask,
 )
 from seg_lib.io.labelme import BoxPointFormatter, PointFormatter, SegPointFormatter
+from seg_lib.models.checkpoint import strip_module_prefix
 
 
 def test_json_round_trip_and_sorted_names(tmp_path):
@@ -76,6 +77,17 @@ def test_image_readers_and_labelme_formatters(tmp_path):
     assert ok
     decoded = img_b64_to_arr(base64.b64encode(encoded.tobytes()))
     assert decoded.shape[:2] == (5, 6)
+    assert img_b64_to_arr(
+        base64.b64encode(encoded.tobytes()), mode='RGB'
+    ).shape == (5, 6, 3)
+
+    rgba = np.zeros((5, 6, 4), dtype=np.uint8)
+    rgba[..., 3] = 255
+    ok, encoded_rgba = cv2.imencode('.png', rgba)
+    assert ok
+    b64_rgba = base64.b64encode(encoded_rgba.tobytes())
+    assert img_b64_to_arr(b64_rgba).shape == (5, 6, 4)
+    assert img_b64_to_arr(b64_rgba, mode='RGB').shape == (5, 6, 3)
 
     with pytest.raises(NotImplementedError):
         PointFormatter.__call__([[0, 0]], 10, 10)
@@ -85,3 +97,10 @@ def test_image_readers_and_labelme_formatters(tmp_path):
     assert len(box) == 4
     assert box[2] == '0.2'
     assert box[3] == '0.2'
+
+
+def test_strip_module_prefix_only_touches_leading_prefix():
+    state = {'module.a.weight': 1, 'b.module.bias': 2, 'c': 3}
+    assert strip_module_prefix(state) == {
+        'a.weight': 1, 'b.module.bias': 2, 'c': 3
+    }

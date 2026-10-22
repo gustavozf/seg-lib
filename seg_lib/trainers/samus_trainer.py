@@ -56,14 +56,15 @@ class SamusModelTrainer(SegmentationModelTrainer):
 
         return val_loss.item(), end_time, low_masks.shape[0]
     
-    def fit(self, *args, **kwargs):
+    def fit(self, train_ds, val_ds, **kwargs):
         out_path = kwargs.get('output_path', 'outputs/')
+        os.makedirs(out_path, exist_ok=True)
         plot_dataloader_sample(
-            next(iter(args[0])),
+            next(iter(train_ds)),
             output_path=os.path.join(out_path, 'train_ds_sample.png')
         )
         plot_dataloader_sample(
-            next(iter(args[1])),
+            next(iter(val_ds)),
             output_path=os.path.join(out_path, 'val_ds_sample.png')
         )
-        return super().fit(*args, **kwargs)
+        return super().fit(train_ds, val_ds, **kwargs)

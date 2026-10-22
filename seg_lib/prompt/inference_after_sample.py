@@ -12,7 +12,7 @@ class MaskInferenceAfterSample:
         self.point_sampler = self.__set_point_sampler(point_sampler)
         self.bbox_sampler = self.__set_sampler(bbox_sampler)
         self.mask_sampler = self.__set_sampler(mask_sampler)
-        self.th = predictor.model.mask_threshold
+        self.th = predictor.mask_threshold
 
     def __set_sampler(self, sampler):
         if sampler is None:

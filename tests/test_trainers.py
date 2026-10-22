@@ -7,7 +7,7 @@ from tests.conftest import ScriptedTrainer, tiny_optimizer
 from seg_lib.losses.combined_losses import MaskBCELoss
 from seg_lib.trainers.pvtv2_trainer import PVTv2ModelTrainer
 from seg_lib.trainers.samus_trainer import SamusModelTrainer
-from seg_lib.trainers.seg_trainer import SegmentationModelTrainer
+from seg_lib.trainers.seg_trainer import SegmentationModelTrainer, merge_heads
 
 
 def test_warmup_period_base_lr_and_completed_ramp():
@@ -88,6 +88,34 @@ def test_fit_eval_frequency_best_checkpoint_and_unwrapped_save(tmp_path, monkeyp
     model_saves = [item for item in saved if os.path.basename(item[0]) == 'net.pth']
     # epochs 0 and 2 match save_freq; epoch 3 is the last epoch
     assert len(model_saves) == 3
+    # one row per epoch, without a trailing all-zero row
+    assert len(logs) == 4
+
+
+def test_train_loop_on_empty_loader_returns_zero():
+    model, opt = tiny_optimizer()
+    trainer = ScriptedTrainer(model, opt, torch.nn.MSELoss())
+    assert trainer.train_loop([]) == 0.0
+
+
+def test_fit_creates_missing_output_directory(tmp_path, monkeypatch):
+    model, opt = tiny_optimizer()
+    trainer = ScriptedTrainer(
+        model, opt, torch.nn.MSELoss(), batch_losses=[0.1], dice_values=[0.5]
+    )
+    monkeypatch.setattr(
+        'seg_lib.trainers.seg_trainer.torch.save', lambda *args, **kwargs: None
+    )
+    out = tmp_path / 'nested' / 'run'
+    trainer.fit([None], [None], n_epochs=1, output_path=str(out))
+    assert (out / 'logs.csv').exists()
+
+
+def test_merge_heads_sums_tuples_and_passes_tensors():
+    a = torch.ones(1, 1, 2, 2)
+    b = torch.full((1, 1, 2, 2), 2.0)
+    assert torch.equal(merge_heads((a, b)), torch.full((1, 1, 2, 2), 3.0))
+    assert merge_heads(a) is a
 
 
 class _PromptNet(torch.nn.Module):
@@ -140,7 +168,6 @@ def test_samus_fit_default_and_custom_output_path(tmp_path, monkeypatch):
         lambda batch, output_path=None, **kwargs: plotted.append(output_path),
     )
     monkeypatch.chdir(tmp_path)
-    os.makedirs('outputs', exist_ok=True)
     model = _PromptNet()
     opt = torch.optim.SGD(model.parameters(), lr=0.01)
     trainer = SamusModelTrainer(
@@ -153,16 +180,18 @@ def test_samus_fit_default_and_custom_output_path(tmp_path, monkeypatch):
     assert plotted[0].replace('\\', '/').endswith('outputs/train_ds_sample.png')
     assert plotted[1].replace('\\', '/').endswith('outputs/val_ds_sample.png')
 
+    assert (tmp_path / 'outputs').is_dir()
+
     custom = tmp_path / 'custom'
-    custom.mkdir()
     plotted.clear()
     trainer.fit(
-        [batch],
-        [batch],
+        train_ds=[batch],
+        val_ds=[batch],
         n_epochs=1,
         output_path=str(custom),
     )
     assert plotted[0].replace('\\', '/').endswith('custom/train_ds_sample.png')
+    assert custom.is_dir()
 
 
 class _Heads(torch.nn.Module):
