@@ -92,8 +92,12 @@ class SamInference:
 
     def segment(self, points: list = None, boxes: list = None):
         logger.debug("Running SAM inference")
-        points_masks = self.segment_point(np.array(points))
-        bbox_masks = self.segment_bbox(np.array(boxes))
+        points_masks = None
+        bbox_masks = None
+        if points is not None:
+            points_masks = self.segment_point(np.array(points))
+        if boxes is not None:
+            bbox_masks = self.segment_bbox(np.array(boxes))
         
         if points_masks is None and bbox_masks is None:
             return None

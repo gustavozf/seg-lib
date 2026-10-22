@@ -1,11 +1,10 @@
 from argparse import Namespace
 
-from sam2.build_sam import build_sam2
-from sam2.sam2_image_predictor import SAM2ImagePredictor
-
 from seg_lib.models.cafe_net.pvt import CAFE
 from seg_lib.models.pvt_v2.pvt_v2_seg import SegPVT
 from seg_lib.models.sam import sam_model_registry, SamPredictor
+from seg_lib.models.sam2.build_sam2 import SAM2_MODEL_TYPES, build_sam2, build_sam2_1
+from seg_lib.models.sam2.predictor import Sam2Predictor
 from seg_lib.models.sam_med2d import (
     sam_med_2d_model_registry, SamMed2DPredictor
 )
@@ -17,8 +16,8 @@ SEG_MODELS = {
 }
 SAM_PREDICTORS = {
     'SAM': SamPredictor,
-    'SAMv2': SAM2ImagePredictor,
-    'SAMv2.1': SAM2ImagePredictor,
+    'SAMv2': Sam2Predictor,
+    'SAMv2.1': Sam2Predictor,
     'SAM-Med2D': SamMed2DPredictor,
     'SAMUS': SamusPredictor
 }
@@ -27,23 +26,10 @@ SAM_INPUT_SIZES = {
     'SAM-Med2D': {'input_size': 256, 'embedding_size': 256},
     'SAMUS': {'input_size': 256, 'embedding_size': 128}
 }
-SAMV2_CONFIGS = {
-    'hiera_t': 'configs/sam2/sam2_hiera_t.yaml',
-    'hiera_s': 'configs/sam2/sam2_hiera_s.yaml',
-    'hiera_b+': 'configs/sam2/sam2_hiera_b+.yaml',
-    'hiera_l': 'configs/sam2/sam2_hiera_l.yaml'
-}
-SAMV2_1_CONFIGS = {
-    'hiera_t': 'configs/sam2.1/sam2.1_hiera_t.yaml',
-    'hiera_s': 'configs/sam2.1/sam2.1_hiera_s.yaml',
-    'hiera_b+': 'configs/sam2.1/sam2.1_hiera_b+.yaml',
-    'hiera_l': 'configs/sam2.1/sam2.1_hiera_l.yaml'
-}
-
 SUPPORTED_SEG_MODELS = set(SEG_MODELS.keys())
 SUPPORTED_SAM_MODELS = set(SAM_PREDICTORS.keys())
-SUPPORTED_MODEL_TYPES = {'default', 'vit_h' 'vit_l', 'vit_b'}
-SUPPORTED_SAMV2_TYPES = set(SAMV2_CONFIGS.keys())
+SUPPORTED_MODEL_TYPES = {'default', 'vit_h', 'vit_l', 'vit_b'}
+SUPPORTED_SAMV2_TYPES = set(SAM2_MODEL_TYPES)
 
 def seg_selector(
         checkpoint_path: str,
@@ -70,17 +56,17 @@ def build_samv2_model(
         model_type: str = 'hiera_b+',
         device: str = 'cpu'):
     return build_sam2(
-        SAMV2_CONFIGS[model_type],
-        checkpoint_path,
+        model_type,
+        checkpoint=checkpoint_path,
         device=device)
 
 def build_samv2_1_model(
         checkpoint_path: str,
         model_type: str = 'hiera_b+',
         device: str = 'cpu'):
-    return build_sam2(
-        SAMV2_1_CONFIGS[model_type],
-        checkpoint_path,
+    return build_sam2_1(
+        model_type,
+        checkpoint=checkpoint_path,
         device=device)
 
 def build_sam_med_2d_model(checkpoint_path: str, device: str = 'cpu'):

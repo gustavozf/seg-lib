@@ -11,8 +11,8 @@ def select_loss_by_model(
         return DiceAndBCELoss(classes=classes)
     
     pos_weight = torch.ones([1]) * 2
-    if 'cuda' in device:
-        pos_weight = pos_weight.cuda(device=torch.device(device))
+    if device is not None and 'cuda' in str(device):
+        pos_weight = pos_weight.to(device=torch.device(device))
     
     if model_name == "MSA":
         return MaskBCELoss(pos_weight=pos_weight)

@@ -156,7 +156,7 @@ def get_optm(model: torch.nn.Module):
     if CONFIG.lr_warmup_period > 0:
         return torch.optim.AdamW(
             filter(lambda p: p.requires_grad, model.parameters()),
-            lr=CONFIG.learning_rate / CONFIG.lr_warmup_period,
+            lr=CONFIG.learning_rate,
             betas=(0.9, 0.999),
             weight_decay=0.1)
     
@@ -202,7 +202,10 @@ def main():
         }
     )
 
-    trainer = SamusModelTrainer(model, optimizer, loss_f, device=DEVICE)
+    trainer = SamusModelTrainer(
+        model, optimizer, loss_f, device=DEVICE,
+        base_lr=CONFIG.learning_rate,
+        warmup_period=CONFIG.lr_warmup_period)
     history = trainer.fit(
         train_ds, val_ds,
         n_epochs=CONFIG.epochs,

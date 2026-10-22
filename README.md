@@ -1,184 +1,205 @@
-# SegLib: A library for the development of segmentation models
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) 
+# SegLib
 
-[`SegLib`](https://github.com/gustavozf/seg-lib) was developed in a partnership between researchers from the [Università degli Studi di Padova (Italy)](https://www.unipd.it/) and the [Universidade Estadual de Maringá (Brazil)](https://www.uem.br/). It provides an interface designed to support the development of segmentation models such as PolyPVT (referred to here as SegPVT), CAFE-net, SAM, SAMv2, SAMUS, SAM-Med2D, and others. The library includes these models in PyTorch format, along with standard training classes, predictors (for SAM-like architectures), data loaders, data augmentation pipelines, and more.
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-The library is currently being used for the development of various projects, which can be found under the `projects` subpath. More details about these projects can be found in the following subsections.
+A PyTorch library for building, training, and evaluating image segmentation models. Developed jointly by researchers at the [Università degli Studi di Padova](https://www.unipd.it/) and the [Universidade Estadual de Maringá](https://www.uem.br/).
 
-## Project Structure
-This project is structured as follows:
-- `data`: A sample dataset organized in the expected input format for training and evaluating the described projects.
-- `docker`: Files related to the environment used for training and testing the model, including scripts to build a Docker image or a Singularity image.
-- `projects`:  Scripts for the projects developed using the library.
-- `seg_lib`: The library containing all shared source code used by the scripts (built using Poetry; more details can be found in the `pyproject.toml` file).
-- `tools`: Standalone tools.
+[SegLib](https://github.com/gustavozf/seg-lib) ships semantic and promptable segmenters behind a shared interface, together with trainers, dataloaders, losses, prompt sampling, and evaluation utilities. Paper-specific experiments live under [`projects/`](projects/).
 
-## Projects
-Under the `projects/` path, you can find the source code used in our developed articles. Please refer to the `README.md` file in each individual project for more details on how to execute them. A brief description of each project is provided below.
+## Contents
 
-### enseg-dataset
-Sources developed for the Article:
-Scripts developed for the book chapter:
-- **Title**: [ENSeg: A Novel Dataset and Method for the Segmentation of Enteric Neuron Cells on Microscopy Images](https://www.mdpi.com/2076-3417/15/3/1046)
-- **Authors**: Gustavo Zanoni Felipe, Loris Nanni, Isadora Goulart Garcia, Jacqueline Nelisis Zanoni and Yandre Maldonado e Gomes da Costa 
-- **Journal**: Applied Sciences
-- **Publisher**: MDPI
-- **Year**: 2025
-- **DOI**: https://www.mdpi.com/2076-3417/15/3/1046
+- [Features](#features)
+- [Repository layout](#repository-layout)
+- [Research projects](#research-projects)
+- [Installation](#installation)
+- [Data format](#data-format)
+- [Container images](#container-images)
+- [License](#license)
+- [Questions and change requests](#questions-and-change-requests)
 
-For details on how to execute the sources, please refer to the README.md located at `projects/enseg-dataset/README.md`. Also, the full citation may be found at `projects/enseg-dataset/CITATION.bib`.
+## Features
 
----
+Semantic models are constructed with `seg_selector`. Promptable models are constructed with `sam_selector` and wrapped for inference by `predictor_selector`. Both selectors live in `seg_lib/models/selector.py`.
 
-### sample-size-for-training-and-testing
-Scripts developed for the book chapter:
-- **Title**: [Sample Size for Training and Testing: Segment  Anything models and supervised approaches](https://link.springer.com/chapter/10.1007/978-3-031-65430-5_6)
-- **Authors**: Daniela Cuza, Carlo Fantozzi, Loris Nanni, Daniel Fusaro, Gustavo Zanoni Felipe and Sheryl Brahnam
-- **Book Title**: Advances in Intelligent Healthcare Delivery and Management
-- **Publisher**: Springer
-- **Year**: 2024
-- **DOI**: https://doi.org/10.1007/978-3-031-65430-5_6
+### Models
 
-For details on how to execute the sources, please refer to the README.md located at `projects/sample-size-for-training-and-testing/README.md`. Also, the full citation may be found at `projects/sample-size-for-training-and-testing/CITATION.bib`.
+| Model | Task | Selector name | Notes |
+| --- | --- | --- | --- |
+| SegPVT | Semantic | `SegPVT` | PolyPVT with a PVTv2 backbone |
+| CAFE-Net | Semantic | `CAFE` | PVTv2 backbone |
+| SAM | Promptable | `SAM` | ViT-B, ViT-L, or ViT-H. Input size 1024 |
+| SAM 2 | Promptable | `SAMv2` | Hiera tiny, small, base+, or large |
+| SAM 2.1 | Promptable | `SAMv2.1` | Same Hiera sizes as SAM 2 |
+| SAM-Med2D | Promptable | `SAM-Med2D` | Input size 256, with an encoder adapter |
+| SAMUS | Promptable | `SAMUS` | Ultrasound-oriented SAM. Input size 256 |
 
----
+Each promptable model has a matching predictor: `SamPredictor`, `Sam2Predictor`, `SamMed2DPredictor`, or `SamusPredictor`. `Sam2Predictor` serves both SAM 2 and SAM 2.1. A Cellpose-SAM implementation is also included under `seg_lib/models/cpsam`. SAM 2's image model is vendored under `seg_lib/models/sam2/`, so the upstream package is not a dependency. Weights are still downloaded separately.
 
-### improving-existing-segmentators-performance
-Cloned repository of the article (with an additional notebook used for experimentation):
-- **Title**: [Improving Existing Segmentators Performance with Zero-Shot Segmentators](https://www.mdpi.com/1099-4300/25/11/1502)
-- **Authors**:  Loris Nanni, Daniel Fusaro, Carlo Fantozzi and Alberto Pretto
-- **Journal**: Entropy
-- **Publisher**: MDPI
-- **Year**: 2023
-- **DOI**: https://doi.org/10.3390/e25111502
+### Trainers
 
-Please refer to the [original repository](https://github.com/LorisNanni/Improving-existing-segmentators-performance-with-zero-shot-segmentators) for more details. The full citation may be found at `projects/improving-existing-segmentators-performance/CITATION.bib`.
+| Trainer | Used for | Behavior |
+| --- | --- | --- |
+| `SegmentationModelTrainer` | Single-output semantic models | Train and validation loops, checkpointing, and mask metrics |
+| `PVTv2ModelTrainer` | SegPVT and CAFE-Net | Sums the loss across auxiliary decoder heads |
+| `SamusModelTrainer` | SAMUS | Accepts point and box prompts and computes the loss on low-resolution logits |
+
+`PVTv2ModelTrainer` and `SamusModelTrainer` both extend `SegmentationModelTrainer`.
+
+### Training stack
+
+- **Losses.** Dice, focal, and Dice combined with binary cross-entropy. `select_loss_by_model` picks a combination for the target architecture.
+- **Data.** `SegGeneralDataset` for semantic segmentation and `SamGeneralDataset` for promptable models, with weak, standard, and SAMUS-specific augmentation.
+- **Prompts.** Training and inference samplers for points and boxes (`Sampler`, `TrainPromptSampler`, `MaskInferenceAfterSample`).
+- **Evaluation.** Dice, IoU, MAE, weighted F-measure, and E-measure, plus logit fusion between a specialist segmenter and a SAM-family model (`LogitsFusion`, `KittlerLogitsFusion`).
+- **I/O.** Image reading and LabelMe-to-YOLOv8 conversion.
+
+## Repository layout
+
+| Path | Contents |
+| --- | --- |
+| [`seg_lib/`](seg_lib/) | Shared library: models, trainers, dataloaders, losses, prompts, and evaluation |
+| [`projects/`](projects/) | Scripts and notebooks for the published studies |
+| [`data/`](data/) | Sample metadata in the expected training format |
+| [`docker/`](docker/) | Dockerfile and Singularity definition |
+| [`tools/`](tools/) | Standalone converters and utilities |
+
+The package is built with Poetry. Dependencies are declared in [`pyproject.toml`](pyproject.toml).
+
+## Research projects
+
+Each study has its own README and BibTeX citation inside its folder.
+
+### ENSeg dataset
+
+Scripts for the segmentation of enteric neuron cells on microscopy images.
+
+- **Title:** [ENSeg: A Novel Dataset and Method for the Segmentation of Enteric Neuron Cells on Microscopy Images](https://www.mdpi.com/2076-3417/15/3/1046)
+- **Authors:** Gustavo Zanoni Felipe, Loris Nanni, Isadora Goulart Garcia, Jacqueline Nelisis Zanoni, and Yandre Maldonado e Gomes da Costa
+- **Venue:** Applied Sciences (MDPI), 2025
+- **Code:** [`projects/enseg-dataset/`](projects/enseg-dataset/)
+- **Citation:** [`projects/enseg-dataset/CITATION.bib`](projects/enseg-dataset/citation.bib)
+
+### Sample size for training and testing
+
+Scripts for a study of how much labeled data semantic segmenters and Segment Anything models need, using radiology images.
+
+- **Title:** [Sample Size for Training and Testing: Segment Anything Models and Supervised Approaches](https://doi.org/10.1007/978-3-031-65430-5_6)
+- **Authors:** Daniela Cuza, Carlo Fantozzi, Loris Nanni, Daniel Fusaro, Gustavo Zanoni Felipe, and Sheryl Brahnam
+- **Venue:** Advances in Intelligent Healthcare Delivery and Management (Springer), 2024
+- **Code:** [`projects/sample-size-for-training-and-testing/`](projects/sample-size-for-training-and-testing/)
+- **Citation:** [`projects/sample-size-for-training-and-testing/CITATION.bib`](projects/sample-size-for-training-and-testing/CITATION.bib)
+
+### Improving existing segmentators
+
+Notebooks that extend the zero-shot fusion method used as the base for the sample-size study. The original implementation is in the [upstream repository](https://github.com/LorisNanni/Improving-existing-segmentators-performance-with-zero-shot-segmentators).
+
+- **Title:** [Improving Existing Segmentators Performance with Zero-Shot Segmentators](https://doi.org/10.3390/e25111502)
+- **Authors:** Loris Nanni, Daniel Fusaro, Carlo Fantozzi, and Alberto Pretto
+- **Venue:** Entropy (MDPI), 2023
+- **Code:** [`projects/improving-existing-segmentators-performance/`](projects/improving-existing-segmentators-performance/)
+- **Citation:** [`projects/improving-existing-segmentators-performance/CITATION.bib`](projects/improving-existing-segmentators-performance/CITATION.bib)
 
 ## Installation
-To install the library, ensure that Python 3.10 is set up on your machine. We strongly recommend that the user creates a [conda](https://docs.anaconda.com/miniconda/miniconda-install/) environment, as in:
+
+SegLib requires Python 3.10. A dedicated conda environment keeps the PyTorch stack isolated:
 
 ```bash
-# create the environment
 conda create -n seg_lib_env python==3.10
-# activate the environment
 conda activate seg_lib_env
 ```
 
-After setting up the correct Python version, the library may be installed by using `pip` or by building it from scratch. Both processes are described in the following subsections.
-
-### Using Pip
-The library can be installed by executing the following [pip](https://pypi.org/project/seg-lib/) command:
+### From PyPI
 
 ```bash
-# install the latest version
 pip install seg-lib
-# or install a target version
+# or a specific release
 pip install seg-lib==1.0.5
 ```
 
-Please note, for version 1.0.5 and above, it is required that the following library is pre-installed in your working environment:
-```bash
-pip install git+https://github.com/facebookresearch/sam2.git
-```
-
-Due to an incompatibility in PyPi regarding Git-referenced packages, we are unable to package this library alongside ours. This issue will be resolved in future iterations.
-
-### Using the Local Build
-To build the library locally, clone this repository to a local machine and run the following commands from the project's root directory:
+### From source
 
 ```bash
-# install poetry for dependency management and library building
 pip install poetry
-# build the library using poetry
 poetry build
-# install the built wheel file
 pip install dist/seg_lib-1.0.5-py3-none-any.whl
 ```
 
-If all of the steps were followed correctly, everything should be set up.
-The pre-built `wheel` file may be also found in the `dist/` folder, contained in this repository. 
+A pre-built wheel is also available in `dist/`.
 
-## Trainer Data Input Format
-Our dataloaders expects that the data are described in a CSV file, contained in a `metadata` folder existing in the data path. In order to set the data in the desired format, please follow the steps described as follows:
+## Data format
 
-1. create a folder called `metadata`, such as: `/path/to/your/data/metadata`
-2. place a CSV file `{dataset_name}.csv` inside the matadata path
-3. fill the CSV file with the required information regarding the data samples. It should present at least the following columns:
+Dataloaders read a CSV descriptor from a `metadata` folder inside the dataset root.
 
-    - **split**: dataset split, used to filter the data during training and testing. Should be: `train`, `val` or `test`.
-    - **class_id**: integer describing the mask class index. If the problem deals with binary masking, it is assumed that this value is set to 1.
-    - **subset**: name of the set where the image files are stored. Should be placed inside `/path/to/your/data/{set_name}`.
-    - **img_name**: file name of the input image source. Should be stored in `/path/to/your/data/{set_name}/img/{img_name}`.
-    - **label_name**: file name of the refering mask image (label/ground truth). Should be stored in `/path/to/your/data/{set_name}/label/{label_name}`
+1. Create `/path/to/your/data/metadata`.
+2. Add `{dataset_name}.csv`.
+3. Include at least these columns:
 
-By the end of this process, it is expected that the metadata are created in the format:
-```
+| Column | Meaning |
+| --- | --- |
+| `split` | `train`, `val`, or `test` |
+| `class_id` | Integer class index. Use `1` for binary masks |
+| `subset` | Folder under the dataset root that holds this sample |
+| `img_name` | Image file in `{subset}/img/` |
+| `label_name` | Mask file in `{subset}/label/` |
+
+Example rows:
+
+```text
    split  class_id         subset                    img_name                     label_name
 0  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R1.bmp
 1  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R2.bmp
 2  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R3.bmp
-3  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R4.bmp
-4  train         1  ribs_original  VinDr_RibCXR_train_000.png  VinDr_RibCXR_train_000_R5.bmp
 ```
 
-and that the data follow the structure:
-```
-- metadata
-    |_ dataset_descriptor.csv
-- subset_1
-    |- img
-        |- img_name_1.png
-        |- img_name_2.png
-        |- ...
-        |_ img_name_n.png
-    |- label
-        |- img_name_1.bmp
-        |- img_name_2.bmp
-        |- ...
-        |_ img_name_n.bmp
-- subset_n
-    |- img
-        |- img_name_1.png
-        ...
-    |- label
-        |- img_name_1.bmp
-        ...
-- ...
-```
-One should notice that, for training SAM-like architectures (e.g., SAMUS), it is expected that the total number of label masks per input image is equivalent to the number of individual objects to be segmented. In this scenario, the CSV file containing the metadata would have multiple rows with the same `img_name`, but with different `label_name`. For the training of semantic segmentation models, we would expect one `label_name` per `img_name`.
+Expected directory layout:
 
-Some samples of datasets may be found at `data/`. In this ones, `ribs_da1` shows how the data is organized for training/evaluating semantic segmentation models, as `ribs_set_sep_sample` shows how it should be organized for the traning/evaluation of SAM-like architectures.
+```text
+metadata/
+  dataset_descriptor.csv
+subset_1/
+  img/
+    img_name_1.png
+  label/
+    img_name_1.bmp
+subset_n/
+  img/
+  label/
+```
 
-## [OPTIONAL] Docker Build
-If it is of your interest to have the environement set up in a [Docker](https://www.docker.com/) environment, a base `Dockerfile` may be seen at `docker/Dockerfile`. In order to build it, please follow the steps:
+Semantic models expect one mask per image. SAM-like models expect one mask per object, so the same `img_name` can appear on several rows with different `label_name` values.
+
+Sample descriptors are in [`data/metadata/`](data/metadata/). `ribs_da1.csv` follows the semantic layout. `dataset_set_sep_sample.csv` follows the SAM-like layout.
+
+## Container images
+
+### Docker
+
+[`docker/Dockerfile`](docker/Dockerfile) starts from the PyTorch 2.1.2 CUDA 11.8 image and installs SegLib:
 
 ```bash
-# change your path to the docker folder
 cd docker/
-# build the docker image
 docker build -t seg-lib-image:latest .
-# verify if the image appears on the list of images
-docker images
-# run the docker image
 docker run -it seg-lib-image:latest /bin/bash
 ```
 
-It is also possible build a [Singularity](https://docs.sylabs.io/guides/3.0/user-guide/index.html#) image using the `data/image.def` file. To do it so, execute the commands:
+### Singularity
+
+Build from [`docker/image.def`](docker/image.def):
+
 ```bash
-# build the image file
 singularity build image.sif image.def
-# run a script on the built image
 singularity run \
     --bind /path/to/files:/mnt \
     --nv image.sif \
     python MYSCRIPT.py
 ```
 
-It is worth mentioning that `sudo` access may be required for running some of the listed commands.
+Some of these commands require `sudo`.
 
 ## License
-This project is licensed under the **Apache License 2.0**, which allows you to freely use, modify, and distribute the code, even for commercial purposes. The license also provides protection by granting patent rights from contributors. However, there are a few responsibilities: you must include a copy of the license in any distribution, provide proper attribution to the original authors, and if you make any modifications to the code, a notice of those changes should be included. There is no requirement to release your modified code. For full details, refer to the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
+SegLib is released under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). You may use, modify, and distribute the code, including for commercial purposes. Distribute a copy of the license, keep attribution to the original authors, and note any modifications. Modified versions do not have to be released.
 
-## Questions & Change Requests
-If you have any questions regarding the projects or if you face any problems during the execution of our sources/scripts, please feel free to create an issue on this repository or to contact any of the authors.
+## Questions and change requests
+
+Open an issue on this repository, or contact one of the authors, if a script fails or a project needs clarification.

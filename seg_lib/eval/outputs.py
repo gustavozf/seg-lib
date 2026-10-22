@@ -9,9 +9,10 @@ def print_metrics(metrics_obj: Metrics):
     logging.info(f'Total number of objects: {len(metrics_obj.ious)}')
     
     for metric in avg_metrics:
-        logging.info(
-            f"average {metric}: {avg_metrics[metric]*100:5.2f}"
-        )
+        value = avg_metrics[metric]
+        if metric != 'mae':
+            value = value * 100
+        logging.info(f"average {metric}: {value:5.2f}")
 
     return avg_metrics
 

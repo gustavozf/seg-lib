@@ -16,14 +16,33 @@ class SegmentationModelTrainer:
         self,
         model: torch.nn.Module, optm: torch.optim.Optimizer,
         loss_f: torch.nn.Module, metrics: Metrics = Metrics(),
-        device: str = 'cpu'
+        device: str = 'cpu',
+        base_lr: float = None,
+        warmup_period: int = 0
     ):
         self.model = model
         self.optm = optm
         self.loss_f = loss_f
         self.metrics = metrics
         self.iter_num = 0
+        self.base_lr = base_lr
+        self.warmup_period = warmup_period
         self.data_config = {'dtype': torch.float32, 'device': device}
+
+    def _set_warmup_lr(self):
+        if self.warmup_period <= 0 or self.iter_num >= self.warmup_period:
+            return
+        if self.base_lr is None:
+            return
+        lr = self.base_lr * (self.iter_num + 1) / self.warmup_period
+        for param_group in self.optm.param_groups:
+            param_group['lr'] = lr
+
+    def _state_dict(self):
+        model = self.model
+        if isinstance(model, (torch.nn.DataParallel, torch.nn.parallel.DistributedDataParallel)):
+            model = model.module
+        return model.state_dict()
 
     def train_step(self, batch):
         imgs = batch['image'].to(**self.data_config)
@@ -34,6 +53,7 @@ class SegmentationModelTrainer:
         train_loss = self.loss_f(preds, masks)
 
         # backward
+        self._set_warmup_lr()
         self.optm.zero_grad()
         train_loss.backward()
         self.optm.step()
@@ -91,6 +111,7 @@ class SegmentationModelTrainer:
         sum_time = 0.0
         val_losses = 0.0
         n_processed_imgs = 0
+        n_batches = 0
         p_bar = tqdm(range(num_val_batches), desc='Validation')
         for batch in val_ds:
             val_loss, end_time, n_imgs = self.val_step(batch)
@@ -98,20 +119,29 @@ class SegmentationModelTrainer:
             val_losses += val_loss
             sum_time += end_time
             n_processed_imgs += n_imgs
+            n_batches += 1
             
             p_bar.update(1)
             p_bar.set_postfix({
                 'val_loss': val_loss,
-                'mean_val_loss': val_losses / n_processed_imgs,
+                'mean_val_loss': val_losses / n_batches,
                 # mean dice considers the previous batches
                 'mean_dice': self.metrics.get_results()['dice']
             })
         p_bar.close()
 
+        if n_batches == 0:
+            return {
+                'val_losses': 0.0,
+                'fps': 0.0,
+                'mean_latency': 0.0,
+                **self.metrics.get_results()
+            }
+
         return {
-            'val_losses': val_losses / n_processed_imgs,
+            'val_losses': val_losses / n_batches,
             'fps': n_processed_imgs / sum_time,
-            'mean_latency': sum_time / num_val_batches,
+            'mean_latency': sum_time / n_batches,
             **self.metrics.get_results()
         }
 
@@ -168,14 +198,14 @@ class SegmentationModelTrainer:
                     best_dice = logs['val_dice'][epoch]
                     logs['has_improved'][epoch] = 1
                     torch.save(
-                        self.model.state_dict(), best_model_path,
+                        self._state_dict(), best_model_path,
                         _use_new_zipfile_serialization=False)
                 
                 del metrics_dict
 
             if (epoch % save_freq == 0) or (epoch == n_epochs - 1):
                 torch.save(
-                    self.model.state_dict(), model_path,
+                    self._state_dict(), model_path,
                     _use_new_zipfile_serialization=False)
                 pd.DataFrame(logs).to_csv(logs_path)
             gc.collect()

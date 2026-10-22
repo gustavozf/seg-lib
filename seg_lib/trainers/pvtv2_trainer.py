@@ -20,6 +20,7 @@ class PVTv2ModelTrainer(SegmentationModelTrainer):
             train_loss = self.loss_f(preds, masks)
 
         # backward
+        self._set_warmup_lr()
         self.optm.zero_grad()
         train_loss.backward()
         self.optm.step()

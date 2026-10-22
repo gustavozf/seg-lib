@@ -77,6 +77,7 @@ class MaskDiceAndBCELoss(torch.nn.Module):
                 low_res_logits.shape[2],
                 low_res_logits.shape[3],
                 low_res_logits.shape[4])
+        target = target.float()
         loss_ce = self.ce(low_res_logits, target)
         loss_dice = self.dc(low_res_logits, target, sigmoid=True)
         loss = (1 - self.dice_weight) * loss_ce + self.dice_weight * loss_dice
@@ -97,6 +98,6 @@ class MaskBCELoss(torch.nn.Module):
         self.ce =  torch.nn.BCEWithLogitsLoss(pos_weight=pos_weight)
 
     def forward(self, low_res_logits, target):
-        loss = self.ce(low_res_logits, target)
+        loss = self.ce(low_res_logits, target.float())
         return loss
 
