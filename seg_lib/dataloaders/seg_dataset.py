@@ -32,14 +32,18 @@ class SegGeneralDataset(Dataset):
         self.pixel_mean = torch.Tensor(pixel_mean).view(-1, 1, 1)
         self.pixel_std = torch.Tensor(pixel_std).view(-1, 1, 1)
         # metadata dataframe
-        self.df = pd.read_csv(os.path.join(dataset_path, df_file_path))
-        self.df = self.df[self.df['split'] == split]
+        full_df = pd.read_csv(os.path.join(dataset_path, df_file_path))
+        # computed over all splits so every split binarizes the same way
+        self.num_classes = (
+            full_df.groupby('subset')['class_id'].max() + 1
+        ).to_dict()
+        self.df = full_df[full_df['split'] == split]
 
     def __len__(self):
         return self.df.shape[0]
 
     def get_num_classes(self, subset: str):
-        return self.df[self.df['subset'] == subset]['class_id'].max() + 1
+        return self.num_classes[subset]
 
     def read_img(self, img_name: str, label_name: str, subset: str):
         base_path = os.path.join(self.dataset_path, subset)
@@ -63,6 +67,18 @@ class SegGeneralDataset(Dataset):
             mask[mask > 0] = 1
 
         return image, mask
+
+    def read_label(self, label_name: str, subset: str, class_id: int):
+        '''Reads a label at its original resolution as a binary mask of
+           `class_id`, binarized the same way as in `__getitem__`.'''
+        label_path = os.path.join(
+            self.dataset_path, subset, 'label', label_name
+        )
+        mask = cv2.imread(label_path, 0)
+        if self.get_num_classes(subset) == 2:
+            mask[mask > 0] = 1
+
+        return (mask == class_id).astype(np.uint8)
     
     def resize(self, image, mask):
         ''' Resize the inputs and create the low-level mask (used for measuring

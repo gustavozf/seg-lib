@@ -37,7 +37,8 @@ def test_sampler_modes_fallback_and_grid_erosion():
     tiny[0:2, 0:2] = 1
     tiny_blobs = (tiny > 0).astype(np.int32)
     points, labels = Sampler(mode='common', min_blob_count=10).sample(tiny_blobs, tiny)
-    assert labels.tolist() == [1]
+    # the center pixel is background, so the fallback point is negative
+    assert labels.tolist() == [0]
     assert points[0].tolist() == [6, 6]
 
     empty = np.zeros((12, 12), dtype=np.uint8)
@@ -53,6 +54,33 @@ def test_sampler_modes_fallback_and_grid_erosion():
     assert len(eroded) > 0
     assert len(plain) > 0
     assert labels.min() == 1
+
+
+@pytest.mark.parametrize('mode', ['common', 'center_of_mass', 'random'])
+def test_sampler_fallback_label_follows_mask_value(mode, monkeypatch):
+    # foreground smaller than `min_blob_count`, covering the whole image
+    full = np.ones((3, 3), dtype=np.uint8)
+    blobs = full.astype(np.int32)
+    _, labels = Sampler(mode=mode, min_blob_count=100).sample(blobs, full)
+    assert labels.tolist() == [1]
+
+    empty = np.zeros((3, 3), dtype=np.uint8)
+    _, labels = Sampler(mode=mode, min_blob_count=100).sample(empty, empty)
+    assert labels.tolist() == [0]
+
+
+def test_eroded_grid_handles_non_contiguous_blob_labels():
+    mask = np.zeros((24, 24), dtype=np.uint8)
+    mask[2:10, 2:10] = 1
+    mask[14:22, 14:22] = 1
+    blobs = np.zeros((24, 24), dtype=np.int32)
+    blobs[2:10, 2:10] = 3
+    blobs[14:22, 14:22] = 7
+    points, labels = Sampler(
+        mode='grid', erode_grid=True, min_blob_count=5, sampling_step=4
+    ).sample(blobs, mask)
+    assert len(points) > 0
+    assert set(labels.tolist()) == {1}
 
 
 def test_train_prompt_sampler_branches():
@@ -131,7 +159,8 @@ def test_inference_after_sample_optional_samplers():
         mask_threshold = 0.0
 
         def __init__(self):
-            self.model = self
+            # the threshold lives on the predictor (as in Sam2Predictor)
+            self.model = object()
             self.kwargs = None
 
         def set_image(self, image):

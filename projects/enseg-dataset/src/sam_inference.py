@@ -3,13 +3,22 @@ import numpy as np
 from seg_lib.eval.metrics import Metrics
 from seg_lib.io.image import img_b64_to_arr
 
+def get_interior_click(mask: np.ndarray):
+    '''Returns the (x, y) pixel farthest from the mask border, which always
+       lies inside the object (unlike the median of the coordinates).'''
+    dist = cv2.distanceTransform(
+        (mask > 0).astype(np.uint8), cv2.DIST_L2, 5
+    )
+    y, x = np.unravel_index(np.argmax(dist), dist.shape)
+    return np.array([(x, y)])
+
 class SamOracleInference:
     input_color = 'RGB'
     eval_mode = 'ORACLE'
 
     def __init__(self, predictor):
         self.predictor = predictor
-        self.th = 0.0 # predictor.model.mask_threshold
+        self.th = predictor.mask_threshold
         self.metrics = {
             'click': Metrics(),
             'bbox': Metrics(),
@@ -23,13 +32,7 @@ class SamOracleInference:
         return np.array([[min_x, min_y, max_x, max_y]])
 
     def get_clicks(self, mask: np.ndarray):
-        y_indices, x_indices = np.nonzero(mask)
-        n = len(x_indices) // 2
-
-        # Compute the centroid
-        centroid_x = sorted(x_indices)[n]
-        centroid_y = sorted(y_indices)[n]
-        return np.array([(centroid_x, centroid_y)])        
+        return get_interior_click(mask)
 
     def predict(self, pt_c, pt_l, bbox):
         masks, scores, _ = self.predictor.predict(
@@ -52,7 +55,7 @@ class SamOracleInference:
         return { _k: self.metrics[_k].get_results() for _k in self.metrics }
 
     def load_img(self, img_data):
-        return img_b64_to_arr(img_data)
+        return img_b64_to_arr(img_data, mode='RGB')
 
     def __call__(self, data):
         base_mask = np.zeros((data['imageHeight'], data['imageWidth']))
@@ -77,15 +80,12 @@ class SamRandomInference(SamOracleInference):
     eval_mode = 'RANDOM'
 
     def randomiz_bbox(self, bbox: np.ndarray, img_size: tuple[int]):
-        bbox = bbox + np.random.randint(-8, 8, 4)
-        bbox = np.array([[
-            np.clip(0, img_size[1], bbox[0][0]),
-            np.clip(0, img_size[0], bbox[0][1]),
-            np.clip(0, img_size[1], bbox[0][2]),
-            np.clip(0, img_size[0], bbox[0][3])
-        ]])
+        h, w = img_size
+        bbox = bbox[0] + np.random.randint(-8, 9, 4)
+        xs = np.sort(np.clip(bbox[[0, 2]], 0, w - 1))
+        ys = np.sort(np.clip(bbox[[1, 3]], 0, h - 1))
 
-        return bbox
+        return np.array([[xs[0], ys[0], xs[1], ys[1]]])
 
     def get_clicks(self, mask: np.ndarray):
         idxes = np.argwhere(mask == 1)[:, [1,0]]

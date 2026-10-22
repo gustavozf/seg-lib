@@ -1,3 +1,3 @@
-from seg_lib.trainers.seg_trainer import SegmentationModelTrainer
+from seg_lib.trainers.seg_trainer import SegmentationModelTrainer, merge_heads
 from seg_lib.trainers.samus_trainer import SamusModelTrainer
 from seg_lib.trainers.pvtv2_trainer import PVTv2ModelTrainer

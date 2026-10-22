@@ -6,6 +6,7 @@ from seg_lib.models.sam.inference import SamInference
 from seg_lib.models.sam2.inference import Sam2Inference, Sam21Inference
 from seg_lib.models.sam_med2d.inference import SamMed2dInference
 from seg_lib.models.samus.inference import SamusInference
+from seg_lib.models.samus.predictor import SamusPredictor, SamusResizeLongestSide
 
 
 def _inference(cls):
@@ -95,3 +96,55 @@ def test_unify_mask_accepts_torch_numpy_and_single_mask():
     single = inf.unify_mask((1, 2, 2), single_masks, np.array([0.1, 0.9, 0.0]))
     assert single.shape == (1, 2, 2)
     assert single[0].all()
+
+
+class _SamusHost:
+    mask_threshold = 0.0
+    image_format = 'RGB'
+    device = torch.device('cpu')
+
+
+def test_samus_inference_reads_predictor_threshold(monkeypatch):
+    import seg_lib.models.samus.inference as samus_inference
+
+    monkeypatch.setattr(
+        samus_inference, 'predictor_selector',
+        lambda *args, **kwargs: SamusPredictor(_SamusHost()),
+    )
+    inf = SamusInference('w.pt')
+    assert inf.th == 0.0
+    assert inf.predictor.mask_threshold == 0.0
+
+
+def test_samus_transform_matches_centered_padding():
+    transform = SamusResizeLongestSide(256)
+    # (h, w) = (100, 200): pad 50 rows on top, scale 256 / 200
+    coords = np.array([[0.0, 0.0], [200.0, 100.0]])
+    out = transform.apply_coords(coords, (100, 200))
+    assert np.allclose(out, [[0.0, 64.0], [256.0, 192.0]])
+
+    boxes = np.array([[0, 0, 200, 100]])
+    assert np.allclose(transform.apply_boxes(boxes, (100, 200)), [[0, 64, 256, 192]])
+
+    torch_out = transform.apply_coords_torch(torch.tensor(coords), (100, 200))
+    assert torch.allclose(torch_out, torch.tensor(out, dtype=torch.float))
+
+    # tall image: pad columns instead
+    tall = transform.apply_coords(np.array([[0.0, 0.0]]), (200, 100))
+    assert np.allclose(tall, [[64.0, 0.0]])
+
+    image = np.full((100, 200, 3), 255, dtype=np.uint8)
+    resized = transform.apply_image(image)
+    assert resized.shape == (256, 256, 3)
+    assert resized[0, 128].sum() == 0
+    assert resized[128, 128].sum() > 0
+
+
+def test_samus_postprocess_removes_centered_padding():
+    predictor = SamusPredictor(_SamusHost())
+    predictor.original_size = (4, 8)
+    low_res = torch.zeros(1, 1, 8, 8)
+    low_res[..., 2:6, :] = 1
+    masks = predictor.postprocess_masks(low_res)
+    assert masks.shape == (1, 1, 4, 8)
+    assert torch.all(masks == 1)

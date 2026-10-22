@@ -20,12 +20,14 @@ def img_data_to_pil(img_data):
     img_pil = Image.open(f)
     return img_pil
 
-def img_data_to_arr(img_data):
+def img_data_to_arr(img_data, mode: str | None = None):
     img_pil = img_data_to_pil(img_data)
+    if mode is not None:
+        img_pil = img_pil.convert(mode)
     img_arr = np.array(img_pil)
     return img_arr
 
-def img_b64_to_arr(img_b64):
+def img_b64_to_arr(img_b64, mode: str | None = None):
     img_data = base64.b64decode(img_b64)
-    img_arr = img_data_to_arr(img_data)
+    img_arr = img_data_to_arr(img_data, mode=mode)
     return img_arr

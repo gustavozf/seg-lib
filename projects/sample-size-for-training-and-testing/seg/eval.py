@@ -12,10 +12,13 @@ import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 
+from seg_lib.dataloaders.image_ops import unpad_resize
 from seg_lib.dataloaders.seg_dataset import SegGeneralDataset
 from seg_lib.eval.metrics import Metrics
 from seg_lib.io.files import dump_json, read_json
+from seg_lib.models.checkpoint import strip_module_prefix
 from seg_lib.models.selector import SEG_MODELS
+from seg_lib.trainers import merge_heads
 
 TH = 0.5
 # total number of parallel workers used in the dataloader
@@ -73,7 +76,8 @@ def get_model(model_arch: str, ckpt_path: str, model_path: str):
     model.to(DEVICE)
     
     checkpoint = torch.load(model_path, map_location=torch.device(DEVICE))
-    model.load_state_dict(checkpoint)
+    model.load_state_dict(strip_module_prefix(checkpoint))
+    model.eval()
 
     return model
 
@@ -105,10 +109,11 @@ def eval(test_dataset, model):
     pred_logits = []
     file_names = []
     
+    dataset = test_dataset.dataset
     data_config = {'dtype': torch.float32, 'device': DEVICE}
     for batch in tqdm(test_dataset):
         imgs = batch['image'].to(**data_config)
-        labels = batch['label'].to(**data_config)
+        # (h, w) of each image before padding and resizing
         orig_sizes = np.array(
             list(zip(*batch['original_img_size']) ), dtype=int
         )
@@ -121,23 +126,20 @@ def eval(test_dataset, model):
         latency_p_batch.append(_end - _start)
         batch_sizes.append(imgs.shape[0])
 
-        if isinstance(preds, tuple):
-            final_preds = preds[0]
-            for i in range(1, len(preds)):
-                final_preds = final_preds + preds[i]
-            preds = final_preds
-        
-        logits = preds.sigmoid().detach().numpy()[:, 0, :, :]
-        bin_masks = (logits > TH).astype('uint8')
-        labels = labels.detach().numpy()[:, 0, :, :].astype('uint8')
-        for i in range(bin_masks.shape[0]):
-            bin_mask = cv2.resize(
-                bin_masks[i], orig_sizes[i], cv2.INTER_NEAREST
+        probs = merge_heads(preds).sigmoid().detach().cpu().numpy()[:, 0]
+        for i in range(probs.shape[0]):
+            prob = unpad_resize(
+                probs[i], orig_sizes[i], interpolation=cv2.INTER_LINEAR
             )
-            label = cv2.resize(labels[i], orig_sizes[i], cv2.INTER_NEAREST)
+            bin_mask = (prob > TH).astype('uint8')
+            label = dataset.read_label(
+                batch['label_name'][i],
+                batch['subset'][i],
+                int(batch['class_id'][i])
+            )
 
             metrics.step(bin_mask, label)
-            pred_logits.append(label)
+            pred_logits.append(prob.astype(np.float32))
             pred_masks.append(bin_mask)
             file_names.append(batch['img_name'][i])
 

@@ -11,7 +11,9 @@ from seg_lib.dataloaders.data_aug import (
     NormalImgSegAugmenter,
     WeakImgSegAugmenter,
 )
-from seg_lib.dataloaders.image_ops import resize_w_pad, to_grayscale
+from seg_lib.dataloaders.image_ops import (
+    resize_w_pad, to_grayscale, unpad_resize
+)
 from seg_lib.dataloaders.sam_dataset import SamGeneralDataset
 from seg_lib.dataloaders.samus_data_aug import SamusImgAugmenter
 from seg_lib.dataloaders.seg_dataset import SegGeneralDataset
@@ -171,13 +173,15 @@ def test_samus_augmenter_flags(monkeypatch):
     image, mask = _samus_pair()
     idle = SamusImgAugmenter.init_eval(img_size=16)
     out_image, out_mask = idle(image, mask)
-    assert out_image.size == (16, 16)
-    assert out_mask.size == (16, 16)
+    assert isinstance(out_image, np.ndarray)
+    assert isinstance(out_mask, np.ndarray)
+    assert out_image.shape == (16, 16, 3)
+    assert out_mask.shape == (16, 16)
 
     train = SamusImgAugmenter.init_train(img_size=16)
     monkeypatch.setattr(np.random, 'rand', lambda: 0.0)
     same_image, same_mask = train(image, mask)
-    assert same_image.size == (16, 16)
+    assert same_image.shape == (16, 16, 3)
 
     monkeypatch.setattr(np.random, 'rand', lambda: 0.0)
     assert np.array_equal(train.random_gamma(image), image)
@@ -227,7 +231,71 @@ def test_samus_augmenter_flags(monkeypatch):
     assert distorted.size == (16, 16)
     assert affine.size == (16, 16)
     assert affine_mask.size == (16, 16)
-    assert same_mask.size == (16, 16)
+    assert same_mask.shape == (16, 16)
+
+
+def test_samus_augmenter_rgb_noise_and_affine_without_crop(monkeypatch):
+    image, mask = _samus_pair()
+    aug = SamusImgAugmenter(
+        img_size=16, crop=None, p_gaussn=1, p_random_affine=1,
+        color_jitter_params=None,
+    )
+    monkeypatch.setattr(np.random, 'rand', lambda: 0.0)
+    noisy = aug.random_gauss_noise(torch_to_pil(image))
+    assert np.array(noisy).shape == (16, 16, 3)
+
+    monkeypatch.setattr(np.random, 'rand', lambda: 0.0)
+    out_image, out_mask = aug(image, mask)
+    assert out_image.shape == (16, 16, 3)
+    assert out_mask.shape == (16, 16)
+
+
+def test_samus_augmenter_output_feeds_sam_dataset(tmp_path):
+    _write_pair(tmp_path, 'a.png', 1)
+    _metadata(tmp_path, [
+        {'split': 'train', 'class_id': 1, 'subset': 'set_a', 'img_name': 'a.png', 'label_name': 'a.png'},
+    ])
+    dataset = SamGeneralDataset(
+        str(tmp_path), prompt='bbox', img_size=16, embedding_size=8,
+        augmenter=SamusImgAugmenter.init_eval(img_size=16),
+    )
+    sample = dataset[0]
+    assert sample['image'].shape == (3, 16, 16)
+
+
+def test_resize_w_pad_keeps_class_values():
+    mask = np.zeros((6, 10), dtype=np.uint8)
+    mask[:, :5] = 2
+    resized = resize_w_pad(mask, (23, 23), interpolation=cv2.INTER_NEAREST)
+    assert set(np.unique(resized).tolist()) == {0, 2}
+
+
+@pytest.mark.parametrize('shape', [(6, 10), (10, 6), (8, 8)])
+def test_unpad_resize_inverts_resize_w_pad(shape):
+    mask = np.zeros(shape, dtype=np.uint8)
+    mask[1:4, 2:5] = 1
+    padded = resize_w_pad(mask, (40, 40), interpolation=cv2.INTER_NEAREST)
+    restored = unpad_resize(padded, shape, interpolation=cv2.INTER_NEAREST)
+    assert restored.shape == shape
+    assert np.array_equal(restored, mask)
+
+
+def test_num_classes_uses_every_split(tmp_path):
+    _write_pair(tmp_path, 'a.png', 1)
+    _write_pair(tmp_path, 'b.png', 2)
+    _metadata(tmp_path, [
+        {'split': 'train', 'class_id': 1, 'subset': 'set_a', 'img_name': 'a.png', 'label_name': 'a.png'},
+        {'split': 'val', 'class_id': 2, 'subset': 'set_a', 'img_name': 'b.png', 'label_name': 'b.png'},
+    ])
+    train = SegGeneralDataset(str(tmp_path), split='train', img_size=16)
+    val = SegGeneralDataset(str(tmp_path), split='val', img_size=16)
+    assert train.get_num_classes('set_a') == val.get_num_classes('set_a') == 3
+
+    # multi-class: class 1 is not merged with class 2
+    label = train.read_label('b.png', 'set_a', 1)
+    assert label.shape == (8, 12)
+    assert label.sum() == 0
+    assert val.read_label('b.png', 'set_a', 2).sum() == 6 * 8
 
 
 def torch_to_pil(array):

@@ -54,10 +54,16 @@ class Sampler:
 
         # no mask? pick the center pixel of image
         if len(input_point) == 0:
-            input_point = [[mask.shape[1]//2, mask.shape[0]//2]]
-            input_label = [1]
+            return self.fallback_point(
+                mask, mask.shape[1]//2, mask.shape[0]//2
+            )
 
         return np.array(input_point), np.array(input_label)
+
+    @staticmethod
+    def fallback_point(mask: np.ndarray, x: int, y: int):
+        '''Single (x, y) point labelled by the mask value at that pixel.'''
+        return np.array([[x, y]]), np.array([int(mask[y, x] >= 1)])
     
     def sample_pixels_center_of_mass(
             self,
@@ -83,9 +89,10 @@ class Sampler:
 
         # no mask? pick the center pixel of image
         if len(input_point) == 0:
-            input_point = [[mask.shape[1]//2, mask.shape[0]//2]]
-            input_label = [1]
-            logging.debug(f"empty blob -> {input_point}")
+            logging.debug("empty blob -> center pixel")
+            return self.fallback_point(
+                mask, mask.shape[1]//2, mask.shape[0]//2
+            )
 
         return np.array(input_point), np.array(input_label)
 
@@ -113,10 +120,11 @@ class Sampler:
 
         # no mask? sample a random point
         if len(input_point) == 0:
-            input_point, input_label = [ \
-                [np.random.randint(0, mask.shape[1]),   \
-                 np.random.randint(0, mask.shape[0])]], \
-            [1]
+            return self.fallback_point(
+                mask,
+                np.random.randint(0, mask.shape[1]),
+                np.random.randint(0, mask.shape[0])
+            )
 
         return np.array(input_point), np.array(input_label)
 
@@ -192,9 +200,8 @@ class Sampler:
                         blobs[i] = -1
 
                 for i in range(input_point.shape[0]):
-                    fl_ip = input_point[i][0]*mask.shape[1] + input_point[i][1]
-                    idx = mask_of_blobs[input_point[i][1], input_point[i][0]]
-                    blobs[idx]=1.0
+                    bl = mask_of_blobs[input_point[i][1], input_point[i][0]]
+                    blobs[np.searchsorted(blob_labels, bl)] = 1.0
                 
                 if not np.any(blobs==0.0) or erode_size==1:
                     break

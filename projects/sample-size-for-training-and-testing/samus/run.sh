@@ -30,8 +30,6 @@ python eval.py \
 # evaluation using the predictor class + iterative data loading
 python test.py \
     --input_path "$BASE_PATH/outputs/$EXP_TAG" \
-    --backbone_weights_path "$BASE_PATH/pretrained_models/$BACKBONE_FILE" \
     --data_path "$BASE_PATH/data" \
     --data_desc_path "$BASE_PATH/data/metadata/$DATASET_DESCRIPTOR" \
-    --test_split_name val \
-    --batch_size 8
+    --test_split_name val

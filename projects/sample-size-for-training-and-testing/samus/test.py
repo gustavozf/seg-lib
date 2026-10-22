@@ -29,10 +29,6 @@ def get_args():
         required=True, type=str,
         help='Path to the training output path.')
     parser.add_argument(
-        '-w', '--backbone_weights_path',
-        required=False, type=str,
-        help='Path to the backbone weights.')
-    parser.add_argument(
         '-d', '--data_path',
         required=True, type=str,
         help='Path to the test data.')
@@ -41,10 +37,6 @@ def get_args():
         required=True, type=str,
         help=('Path to the data description file (CSV format). '
               'Read from `data_path`.'))
-    parser.add_argument(
-        '-b', '--batch_size',
-        required=False, type=int, default=8,
-        help='Batch size used for training and validation.')
     parser.add_argument(
         '-s', '--test_split_name',
         required=False, type=str,
@@ -57,10 +49,7 @@ def get_args():
     
     return parser.parse_args()
 
-def get_predictor(
-        checkpoint_path: str,
-        backbone_path: str,
-        input_size: int = 256):
+def get_predictor(checkpoint_path: str):
     model = build_samus_model(checkpoint_path, device=DEVICE)
     return SamusPredictor(model)
 
@@ -82,13 +71,9 @@ def main():
     )
 
     checkpoint_path = os.path.join(
-        train_config['output_path'], f"best_{train_config['model_type']}.pth"
+        eval_config.input_path, f"best_{train_config['model_type']}.pth"
     )
-    predictor = get_predictor(
-        checkpoint_path,
-        eval_config.backbone_weights_path,
-        input_size=train_config['input_size']
-    )
+    predictor = get_predictor(checkpoint_path)
     test_df = get_data(
         eval_config.data_desc_path,
         split=eval_config.test_split_name
@@ -102,7 +87,7 @@ def main():
         get_inference = MaskInferenceAfterSample(*args)
 
         for _, row in tqdm(test_df.iterrows(), total=test_df.shape[0]):
-            base_path = os.path.join(train_config['data_path'], row['subset']) 
+            base_path = os.path.join(eval_config.data_path, row['subset'])
             img_path = os.path.join(base_path, 'img', row['img_name'])
             label_path = os.path.join(base_path, 'label', row['label_name'])
 
@@ -119,7 +104,7 @@ def main():
         output_metrics[method] = metrics.get_results()
 
         metrics_path = os.path.join(
-            train_config['output_path'], f'{method}_metrics.csv'
+            eval_config.input_path, f'{method}_metrics.csv'
         )
         out_df = pd.DataFrame(output_metrics)
         out_df.to_csv(metrics_path)

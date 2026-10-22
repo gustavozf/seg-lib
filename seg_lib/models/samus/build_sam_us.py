@@ -9,6 +9,7 @@ from functools import partial
 import torch
 from torch.nn import functional as F
 
+from seg_lib.models.checkpoint import strip_module_prefix
 from seg_lib.models.samus.modeling import (
     ImageEncoderViT,
     MaskDecoder, 
@@ -130,7 +131,7 @@ def _build_samus(
                 {} if torch.cuda.is_available()
                 else {'map_location': torch.device('cpu')}
             )
-            state_dict = torch.load(f, **params)
+            state_dict = strip_module_prefix(torch.load(f, **params))
         try:
             samus.load_state_dict(state_dict)
         except:

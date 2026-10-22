@@ -212,7 +212,9 @@ def _load_checkpoint(model, ckpt_path):
     if ckpt_path is None:
         return
     state_dict = torch.load(ckpt_path, map_location="cpu", weights_only=True)["model"]
-    missing_keys, unexpected_keys = model.load_state_dict(state_dict)
+    missing_keys, unexpected_keys = model.load_state_dict(
+        state_dict, strict=False
+    )
     if missing_keys:
         logger.error(missing_keys)
         raise RuntimeError("SAM 2 checkpoint is missing keys.")
