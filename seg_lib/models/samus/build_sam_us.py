@@ -127,10 +127,9 @@ def _build_samus(
     samus.eval()
     if checkpoint is not None:
         with open(checkpoint, "rb") as f:
-            params = (
-                {} if torch.cuda.is_available()
-                else {'map_location': torch.device('cpu')}
-            )
+            params = {'weights_only': True}
+            if not torch.cuda.is_available():
+                params['map_location'] = torch.device('cpu')
             state_dict = strip_module_prefix(torch.load(f, **params))
         try:
             samus.load_state_dict(state_dict)

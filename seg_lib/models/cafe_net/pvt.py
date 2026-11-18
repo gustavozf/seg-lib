@@ -363,7 +363,7 @@ class CAFE(nn.Module):
         super(CAFE, self).__init__()
 
         self.backbone = pvt_v2_b2()  
-        save_model = torch.load(pvtv2_path)
+        save_model = torch.load(pvtv2_path, weights_only=True)
         model_dict = self.backbone.state_dict()
         state_dict = {k: v for k, v in save_model.items() if k in model_dict.keys()}
         model_dict.update(state_dict)
