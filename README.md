@@ -101,10 +101,10 @@ Notebooks that extend the zero-shot fusion method used as the base for the sampl
 
 ## Installation
 
-SegLib requires Python 3.10. A dedicated conda environment keeps the PyTorch stack isolated:
+SegLib requires Python 3.11. Pillow 13.0.0, required for the image-decoding fixes, does not support Python 3.10. A dedicated conda environment keeps the PyTorch stack isolated:
 
 ```bash
-conda create -n seg_lib_env python==3.10
+conda create -n seg_lib_env python==3.11
 conda activate seg_lib_env
 ```
 

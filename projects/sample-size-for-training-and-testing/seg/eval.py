@@ -75,7 +75,11 @@ def get_model(model_arch: str, ckpt_path: str, model_path: str):
     model = build_model(model_arch, ckpt_path)
     model.to(DEVICE)
     
-    checkpoint = torch.load(model_path, map_location=torch.device(DEVICE))
+    checkpoint = torch.load(
+        model_path,
+        map_location=torch.device(DEVICE),
+        weights_only=True,
+    )
     model.load_state_dict(strip_module_prefix(checkpoint))
     model.eval()
 

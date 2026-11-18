@@ -178,7 +178,7 @@ class SegPVT(nn.Module):
         super(SegPVT, self).__init__()
 
         self.backbone = pvt_v2_b2()  # [64, 128, 320, 512]
-        save_model = torch.load(backbone_ckpt_path)
+        save_model = torch.load(backbone_ckpt_path, weights_only=True)
         model_dict = self.backbone.state_dict()
         state_dict = {
             k: v for k, v in save_model.items()
